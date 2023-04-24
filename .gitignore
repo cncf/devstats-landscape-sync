@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# LG
+*.secret
+*.swp
+/check_sync
+/go.sum
