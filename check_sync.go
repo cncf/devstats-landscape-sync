@@ -46,8 +46,15 @@ func checkSync() (err error) {
 		"traefik mesh": {},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
+	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
+	// Capsue has no join data in landscape.yml
+	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
+	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17'
 	ignoreJoinDate := map[string]struct{}{
-		"kubedl": {},
+		"kubedl":       {},
+		"capsule":      {},
+		"curve":        {},
+		"clusterpedia": {},
 	}
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
@@ -177,15 +184,16 @@ func checkSync() (err error) {
 					_, present := joinDatesL[name]
 					// Only first specified date will be used, no overwrite, especially with blank data
 					if !present && item.Extra.Accepted != "" {
-						joinDatesL[name] = item.Extra.Accepted
+						dtS := strings.TrimSpace(item.Extra.Accepted)
+						if len(dtS) > 10 {
+							dtS = dtS[:10]
+						}
+						joinDatesL[name] = dtS
 					}
 				}
 			}
 		}
 	}
-	fmt.Printf("Projects join dates:\n%+v\n", joinDatesP)
-	fmt.Printf("Landscape join dates:\n%+v\n", joinDatesL)
-	fmt.Printf("Names mapping:\n%+v\n", namesMapping)
 	landscapeMiss := 0
 	for name := range projectsNames {
 		_, ok := landscapeNames[name]
