@@ -25,3 +25,4 @@ go.work
 *.swp
 /check_sync
 /go.sum
+/out
