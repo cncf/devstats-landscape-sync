@@ -59,6 +59,12 @@ func checkSync() (err error) {
 		"curve":        {},
 		"clusterpedia": {},
 	}
+	// To ignore specific projects tstatuses after confirmed they are OK
+	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
+	ignoreStatus := map[string]struct{}{
+		"capsule": {},
+		"metallb": {},
+	}
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
 		landscapePath = "https://raw.githubusercontent.com/cncf/landscape/master/landscape.yml"
@@ -264,12 +270,10 @@ func checkSync() (err error) {
 	statusErrs := make(map[string]struct{})
 	for status, projects := range projectsByStateL {
 		for project := range projects {
-			/*
-				_, ignore := ignoreStatus[project]
-				if ignore {
-					continue
-				}
-			*/
+			_, ignore := ignoreStatus[project]
+			if ignore {
+				continue
+			}
 			_, ok := projectsByStateP[status][project]
 			if !ok {
 				fmt.Printf("error: landscape %s '%s' is missing", status, project)
@@ -287,24 +291,25 @@ func checkSync() (err error) {
 	}
 	for status, projects := range projectsByStateP {
 		for project := range projects {
-			/*
-				_, ignore := ignoreStatus[project]
-				if ignore {
-					continue
-				}
-			*/
+			_, ignore := ignoreStatus[project]
+			if ignore {
+				continue
+			}
 			_, ok := projectsByStateL[status][project]
 			if !ok {
-				fmt.Printf("error: devstats %s '%s' is missing", status, project)
-				for otherStatus := range projectsByStateL {
-					_, ok := projectsByStateL[otherStatus][project]
-					if ok {
-						fmt.Printf(", but is present in %s", otherStatus)
-						break
+				_, reported := statusErrs[project]
+				if !reported {
+					fmt.Printf("error: devstats %s '%s' is missing", status, project)
+					for otherStatus := range projectsByStateL {
+						_, ok := projectsByStateL[otherStatus][project]
+						if ok {
+							fmt.Printf(", but is present in %s", otherStatus)
+							break
+						}
 					}
+					fmt.Printf("\n")
+					statusErrs[project] = struct{}{}
 				}
-				fmt.Printf("\n")
-				statusErrs[project] = struct{}{}
 			}
 		}
 	}
