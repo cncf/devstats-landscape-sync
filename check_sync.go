@@ -27,6 +27,7 @@ func checkSync() (err error) {
 		"external secrets operator":           "external-secrets",
 		"smi":                                 "service mesh interface (smi)",
 		"hexa policy orchestrator":            "hexa",
+		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
 	// Others are missing in landscape.yml, while they are present in DevStats
@@ -41,9 +42,11 @@ func checkSync() (err error) {
 	// Fort example Cilum was renamed to Tetragon and is listed twice
 	// Those entries should not be reported as missing in DevStats
 	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
+	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DEvStats page for it)
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
 		"traefik mesh": {},
+		"opengitops":   {},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -124,11 +127,11 @@ func checkSync() (err error) {
 	disabledProjects := make(map[string]struct{})
 	joinDatesP := make(map[string]string)
 	joinDatesL := make(map[string]string)
+	projectsByStateP := make(map[string]map[string]struct{})
+	projectsByStateL := make(map[string]map[string]struct{})
 	for name, data := range projects.Projects {
 		/*
 			MainRepo         string            `yaml:"main_repo"`
-			FullName         string            `yaml:"name"`
-			Status           string            `yaml:"status"`
 			IncubatingDate   *time.Time        `yaml:"incubating_date"`
 			GraduatedDate    *time.Time        `yaml:"graduated_date"`
 			ArchivedDate     *time.Time        `yaml:"archived_date"`
@@ -154,6 +157,12 @@ func checkSync() (err error) {
 			namesMapping[fullName] = name
 		}
 		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		_, ok = projectsByStateP[status]
+		if !ok {
+			projectsByStateP[status] = make(map[string]struct{})
+		}
+		projectsByStateP[status][fullName] = struct{}{}
 	}
 	devstatsMiss := 0
 	for _, data := range landscape.Landscape {
@@ -170,8 +179,9 @@ func checkSync() (err error) {
 						}
 					}
 				}
+				status := strings.TrimSpace(strings.ToLower(item.Project))
 				// Project can be missing in DevStats:projects.yaml
-				if !ok && item.Extra.Accepted != "" {
+				if !ok && (item.Extra.Accepted != "" || status != "") {
 					_, disabled := disabledProjects[name]
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
@@ -179,17 +189,25 @@ func checkSync() (err error) {
 						devstatsMiss++
 					}
 				}
-				if ok {
-					landscapeNames[name] = struct{}{}
-					_, present := joinDatesL[name]
-					// Only first specified date will be used, no overwrite, especially with blank data
-					if !present && item.Extra.Accepted != "" {
-						dtS := strings.TrimSpace(item.Extra.Accepted)
-						if len(dtS) > 10 {
-							dtS = dtS[:10]
-						}
-						joinDatesL[name] = dtS
+				if !ok {
+					continue
+				}
+				landscapeNames[name] = struct{}{}
+				_, present := joinDatesL[name]
+				// Only first specified date will be used, no overwrite, especially with blank data
+				if !present && item.Extra.Accepted != "" {
+					dtS := strings.TrimSpace(item.Extra.Accepted)
+					if len(dtS) > 10 {
+						dtS = dtS[:10]
 					}
+					joinDatesL[name] = dtS
+				}
+				if status != "" {
+					_, ok = projectsByStateL[status]
+					if !ok {
+						projectsByStateL[status] = make(map[string]struct{})
+					}
+					projectsByStateL[status][name] = struct{}{}
 				}
 			}
 		}
@@ -240,6 +258,58 @@ func checkSync() (err error) {
 	}
 	if len(joinDatesErrs) > 0 {
 		fmt.Printf("%d join dates mismatches detected\n", len(joinDatesErrs))
+	}
+	fmt.Printf("devstats projects by state:\n%+v\n", projectsByStateP)
+	fmt.Printf("landscape projects by state:\n%+v\n", projectsByStateL)
+	statusErrs := make(map[string]struct{})
+	for status, projects := range projectsByStateL {
+		for project := range projects {
+			/*
+				_, ignore := ignoreStatus[project]
+				if ignore {
+					continue
+				}
+			*/
+			_, ok := projectsByStateP[status][project]
+			if !ok {
+				fmt.Printf("error: landscape %s '%s' is missing", status, project)
+				for otherStatus := range projectsByStateP {
+					_, ok := projectsByStateP[otherStatus][project]
+					if ok {
+						fmt.Printf(", but is present in %s", otherStatus)
+						break
+					}
+				}
+				fmt.Printf("\n")
+				statusErrs[project] = struct{}{}
+			}
+		}
+	}
+	for status, projects := range projectsByStateP {
+		for project := range projects {
+			/*
+				_, ignore := ignoreStatus[project]
+				if ignore {
+					continue
+				}
+			*/
+			_, ok := projectsByStateL[status][project]
+			if !ok {
+				fmt.Printf("error: devstats %s '%s' is missing", status, project)
+				for otherStatus := range projectsByStateL {
+					_, ok := projectsByStateL[otherStatus][project]
+					if ok {
+						fmt.Printf(", but is present in %s", otherStatus)
+						break
+					}
+				}
+				fmt.Printf("\n")
+				statusErrs[project] = struct{}{}
+			}
+		}
+	}
+	if len(statusErrs) > 0 {
+		fmt.Printf("%d status mismatches detected\n", len(statusErrs))
 	}
 	return
 }
