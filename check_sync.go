@@ -59,6 +59,8 @@ func checkSync() (err error) {
 		"curve":        {},
 		"clusterpedia": {},
 	}
+	ignoreIncubatingDate := map[string]struct{}{}
+	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects tstatuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
 	ignoreStatus := map[string]struct{}{
@@ -132,16 +134,16 @@ func checkSync() (err error) {
 	landscapeNames := make(map[string]struct{})
 	disabledProjects := make(map[string]struct{})
 	joinDatesP := make(map[string]string)
+	incubatingDatesP := make(map[string]string)
+	graduatedDatesP := make(map[string]string)
 	joinDatesL := make(map[string]string)
+	incubatingDatesL := make(map[string]string)
+	graduatedDatesL := make(map[string]string)
 	projectsByStateP := make(map[string]map[string]struct{})
 	projectsByStateL := make(map[string]map[string]struct{})
 	for name, data := range projects.Projects {
-		/*
-			MainRepo         string            `yaml:"main_repo"`
-			IncubatingDate   *time.Time        `yaml:"incubating_date"`
-			GraduatedDate    *time.Time        `yaml:"graduated_date"`
-			ArchivedDate     *time.Time        `yaml:"archived_date"`
-		*/
+		// MainRepo     string     `yaml:"main_repo"`
+		// ArchivedDate *time.Time  `yaml:"archived_date"`
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
 		if skip {
@@ -163,6 +165,12 @@ func checkSync() (err error) {
 			namesMapping[fullName] = name
 		}
 		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
+		if data.IncubatingDate != nil {
+			incubatingDatesP[fullName] = data.IncubatingDate.Format("2006-01-02")
+		}
+		if data.GraduatedDate != nil {
+			graduatedDatesP[fullName] = data.GraduatedDate.Format("2006-01-02")
+		}
 		status := strings.TrimSpace(strings.ToLower(data.Status))
 		_, ok = projectsByStateP[status]
 		if !ok {
@@ -207,6 +215,23 @@ func checkSync() (err error) {
 						dtS = dtS[:10]
 					}
 					joinDatesL[name] = dtS
+				}
+				_, present = incubatingDatesL[name]
+				if !present && item.Extra.Incubating != "" {
+					dtS := strings.TrimSpace(item.Extra.Incubating)
+					if len(dtS) > 10 {
+						dtS = dtS[:10]
+					}
+					incubatingDatesL[name] = dtS
+				}
+				_, present = graduatedDatesL[name]
+				// FIXME: Incubating -> Graduated
+				if !present && item.Extra.Graduated != "" {
+					dtS := strings.TrimSpace(item.Extra.Graduated)
+					if len(dtS) > 10 {
+						dtS = dtS[:10]
+					}
+					graduatedDatesL[name] = dtS
 				}
 				if status != "" {
 					_, ok = projectsByStateL[status]
@@ -265,8 +290,84 @@ func checkSync() (err error) {
 	if len(joinDatesErrs) > 0 {
 		fmt.Printf("%d join dates mismatches detected\n", len(joinDatesErrs))
 	}
-	fmt.Printf("devstats projects by state:\n%+v\n", projectsByStateP)
-	fmt.Printf("landscape projects by state:\n%+v\n", projectsByStateL)
+	incubatingDatesErrs := make(map[string]struct{})
+	for project, incubatingDateL := range incubatingDatesL {
+		_, ignore := ignoreIncubatingDate[project]
+		if ignore {
+			continue
+		}
+		incubatingDateP, ok := incubatingDatesP[project]
+		if !ok {
+			fmt.Printf("error: landscape '%s' incubating date '%s' is missing in devstats\n", project, incubatingDateL)
+			incubatingDatesErrs[project] = struct{}{}
+			continue
+		}
+		if incubatingDateL != incubatingDateP {
+			fmt.Printf("error: landscape '%s' incubating date '%s' is not equal to devstats incubating date '%s'\n", project, incubatingDateL, incubatingDateP)
+			incubatingDatesErrs[project] = struct{}{}
+		}
+	}
+	for project, incubatingDateP := range incubatingDatesP {
+		_, ignore := ignoreIncubatingDate[project]
+		if ignore {
+			continue
+		}
+		incubatingDateL, ok := incubatingDatesL[project]
+		if !ok {
+			fmt.Printf("error: devstats '%s' incubating date '%s' is missing in landscape\n", project, incubatingDateP)
+			incubatingDatesErrs[project] = struct{}{}
+			continue
+		}
+		if incubatingDateL != incubatingDateP {
+			_, reported := incubatingDatesErrs[project]
+			if !reported {
+				fmt.Printf("error: devstats '%s' incubating date '%s' is not equal to landscape incubating date '%s'\n", project, incubatingDateP, incubatingDateL)
+				incubatingDatesErrs[project] = struct{}{}
+			}
+		}
+	}
+	if len(incubatingDatesErrs) > 0 {
+		fmt.Printf("%d incubating dates mismatches detected\n", len(incubatingDatesErrs))
+	}
+	graduatedDatesErrs := make(map[string]struct{})
+	for project, graduatedDateL := range graduatedDatesL {
+		_, ignore := ignoreGraduatedDate[project]
+		if ignore {
+			continue
+		}
+		graduatedDateP, ok := graduatedDatesP[project]
+		if !ok {
+			fmt.Printf("error: landscape '%s' graduated date '%s' is missing in devstats\n", project, graduatedDateL)
+			graduatedDatesErrs[project] = struct{}{}
+			continue
+		}
+		if graduatedDateL != graduatedDateP {
+			fmt.Printf("error: landscape '%s' graduated date '%s' is not equal to devstats graduated date '%s'\n", project, graduatedDateL, graduatedDateP)
+			graduatedDatesErrs[project] = struct{}{}
+		}
+	}
+	for project, graduatedDateP := range graduatedDatesP {
+		_, ignore := ignoreGraduatedDate[project]
+		if ignore {
+			continue
+		}
+		graduatedDateL, ok := graduatedDatesL[project]
+		if !ok {
+			fmt.Printf("error: devstats '%s' graduated date '%s' is missing in landscape\n", project, graduatedDateP)
+			graduatedDatesErrs[project] = struct{}{}
+			continue
+		}
+		if graduatedDateL != graduatedDateP {
+			_, reported := graduatedDatesErrs[project]
+			if !reported {
+				fmt.Printf("error: devstats '%s' graduated date '%s' is not equal to landscape graduated date '%s'\n", project, graduatedDateP, graduatedDateL)
+				graduatedDatesErrs[project] = struct{}{}
+			}
+		}
+	}
+	if len(graduatedDatesErrs) > 0 {
+		fmt.Printf("%d graduated dates mismatches detected\n", len(graduatedDatesErrs))
+	}
 	statusErrs := make(map[string]struct{})
 	for status, projects := range projectsByStateL {
 		for project := range projects {
