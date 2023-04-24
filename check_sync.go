@@ -59,7 +59,13 @@ func checkSync() (err error) {
 		"curve":        {},
 		"clusterpedia": {},
 	}
-	ignoreIncubatingDate := map[string]struct{}{}
+	// Some incubating dates present in landscape and not present in DevStats can be ignored: this is for projects which joined with level >= incubating
+	// Such projects have no incubation dates in DevStats becaus ethey were at least such at join time
+	// The opposite is not true, we shoudl always have incubating dates in landscape.yml
+	// "kubevirt" has no incubation date in landscape.yml and it moved to incubation but date is unknown
+	ignoreIncubatingDate := map[string]struct{}{
+		"kubevirt": {},
+	}
 	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects tstatuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
@@ -208,6 +214,10 @@ func checkSync() (err error) {
 				}
 				landscapeNames[name] = struct{}{}
 				_, present := joinDatesL[name]
+				var (
+					joinDt  string
+					incubDt string
+				)
 				// Only first specified date will be used, no overwrite, especially with blank data
 				if !present && item.Extra.Accepted != "" {
 					dtS := strings.TrimSpace(item.Extra.Accepted)
@@ -215,6 +225,7 @@ func checkSync() (err error) {
 						dtS = dtS[:10]
 					}
 					joinDatesL[name] = dtS
+					joinDt = dtS
 				}
 				_, present = incubatingDatesL[name]
 				if !present && item.Extra.Incubating != "" {
@@ -222,16 +233,20 @@ func checkSync() (err error) {
 					if len(dtS) > 10 {
 						dtS = dtS[:10]
 					}
-					incubatingDatesL[name] = dtS
+					if dtS > joinDt {
+						incubatingDatesL[name] = dtS
+						incubDt = dtS
+					}
 				}
 				_, present = graduatedDatesL[name]
-				// FIXME: Incubating -> Graduated
 				if !present && item.Extra.Graduated != "" {
 					dtS := strings.TrimSpace(item.Extra.Graduated)
 					if len(dtS) > 10 {
 						dtS = dtS[:10]
 					}
-					graduatedDatesL[name] = dtS
+					if (incubDt == "" && dtS > joinDt) || (incubDt != "" && dtS > incubDt && dtS > joinDt) {
+						graduatedDatesL[name] = dtS
+					}
 				}
 				if status != "" {
 					_, ok = projectsByStateL[status]
