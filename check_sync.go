@@ -14,8 +14,28 @@ import (
 )
 
 func checkSync() (err error) {
+	// Some names are different in DevStats than in landscape.yml (not so many for 170+ projects)
 	devstats2landscape := map[string]string{
-		"Foniod": "Fonio",
+		"foniod":                              "fonio",
+		"litmuschaos":                         "litmus",
+		"opa":                                 "open policy agent (opa)",
+		"tuf":                                 "the update framework (tuf)",
+		"opcr":                                "open policy containers",
+		"cni":                                 "container network interface (cni)",
+		"cloud deployment kit for kubernetes": "cdk for kubernetes (cdk8S)",
+		"piraeus-datastore":                   "piraeus datastore",
+		"external secrets operator":           "external-secrets",
+		"smi":                                 "service mesh interface (smi)",
+		"hexa policy orchestrator":            "hexa",
+	}
+	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
+	// Others are missing in landscape.yml, while they are present in DevStats
+	skipList := map[string]struct{}{
+		"gitopswg":        {},
+		"all":             {},
+		"vscodek8stools":  {},
+		"kubevip":         {},
+		"inspektorgadget": {},
 	}
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
@@ -97,6 +117,10 @@ func checkSync() (err error) {
 			continue
 		}
 		name = strings.ToLower(name)
+		_, skip := skipList[name]
+		if skip {
+			continue
+		}
 		fullName := strings.ToLower(data.FullName)
 		mapped, ok := devstats2landscape[fullName]
 		if ok {
