@@ -45,6 +45,10 @@ func checkSync() (err error) {
 		"tetragon":     {},
 		"traefik mesh": {},
 	}
+	// Some projects have wrong join date in landscape.yml, ignore this
+	ignoreJoinDate := map[string]struct{}{
+		"kubedl": {},
+	}
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
 		landscapePath = "https://raw.githubusercontent.com/cncf/landscape/master/landscape.yml"
@@ -144,6 +148,7 @@ func checkSync() (err error) {
 		}
 		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
 	}
+	devstatsMiss := 0
 	for _, data := range landscape.Landscape {
 		for _, scat := range data.Subcategories {
 			for _, item := range scat.Items {
@@ -164,11 +169,16 @@ func checkSync() (err error) {
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
 						fmt.Printf("error: missing '%s' in devstats projects\n", name)
+						devstatsMiss++
 					}
 				}
 				if ok {
 					landscapeNames[name] = struct{}{}
-					//joinDatesL[data.FullName] = data.JoinDate.Format("2006-01-02")
+					_, present := joinDatesL[name]
+					// Only first specified date will be used, no overwrite, especially with blank data
+					if !present && item.Extra.Accepted != "" {
+						joinDatesL[name] = item.Extra.Accepted
+					}
 				}
 			}
 		}
@@ -176,11 +186,52 @@ func checkSync() (err error) {
 	fmt.Printf("Projects join dates:\n%+v\n", joinDatesP)
 	fmt.Printf("Landscape join dates:\n%+v\n", joinDatesL)
 	fmt.Printf("Names mapping:\n%+v\n", namesMapping)
+	landscapeMiss := 0
 	for name := range projectsNames {
 		_, ok := landscapeNames[name]
 		if !ok {
 			fmt.Printf("error: missing '%s' in landscape\n", name)
+			landscapeMiss++
 		}
+	}
+	joinDatesErrs := make(map[string]struct{})
+	for project, joinDateL := range joinDatesL {
+		_, ignore := ignoreJoinDate[project]
+		if ignore {
+			continue
+		}
+		joinDateP, ok := joinDatesP[project]
+		if !ok {
+			fmt.Printf("error: landscape '%s' join date '%s' is missing in devstats\n", project, joinDateL)
+			joinDatesErrs[project] = struct{}{}
+			continue
+		}
+		if joinDateL != joinDateP {
+			fmt.Printf("error: landscape '%s' join date '%s' is not equal to devstats join date '%s'\n", project, joinDateL, joinDateP)
+			joinDatesErrs[project] = struct{}{}
+		}
+	}
+	for project, joinDateP := range joinDatesP {
+		_, ignore := ignoreJoinDate[project]
+		if ignore {
+			continue
+		}
+		joinDateL, ok := joinDatesL[project]
+		if !ok {
+			fmt.Printf("error: devstats '%s' join date '%s' is missing in landscape\n", project, joinDateP)
+			joinDatesErrs[project] = struct{}{}
+			continue
+		}
+		if joinDateL != joinDateP {
+			_, reported := joinDatesErrs[project]
+			if !reported {
+				fmt.Printf("error: devstats '%s' join date '%s' is not equal to landscape join date '%s'\n", project, joinDateP, joinDateL)
+				joinDatesErrs[project] = struct{}{}
+			}
+		}
+	}
+	if len(joinDatesErrs) > 0 {
+		fmt.Printf("%d join dates mismatches detected\n", len(joinDatesErrs))
 	}
 	return
 }
