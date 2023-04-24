@@ -286,12 +286,12 @@ func checkSync() (err error) {
 		}
 		repoP, ok := reposP[project]
 		if !ok {
-			fmt.Printf("error: landscape '%s' repo '%s' is missing in devstats\n", project, repoL)
+			fmt.Printf("error: landscape repo '%s' '%s' is missing in devstats\n", project, repoL)
 			reposErrs[project] = struct{}{}
 			continue
 		}
 		if repoL != repoP {
-			fmt.Printf("error: landscape '%s' repo '%s' is not equal to devstats repo '%s'\n", project, repoL, repoP)
+			fmt.Printf("error: landscape repo '%s' '%s' is not equal to devstats repo '%s'\n", project, repoL, repoP)
 			reposErrs[project] = struct{}{}
 		}
 	}
@@ -302,14 +302,14 @@ func checkSync() (err error) {
 		}
 		repoL, ok := reposL[project]
 		if !ok {
-			fmt.Printf("error: devstats '%s' repo '%s' is missing in landscape\n", project, repoP)
+			fmt.Printf("error: devstats repo '%s' '%s' is missing in landscape\n", project, repoP)
 			reposErrs[project] = struct{}{}
 			continue
 		}
 		if repoL != repoP {
 			_, reported := reposErrs[project]
 			if !reported {
-				fmt.Printf("error: devstats '%s' repo '%s' is not equal to landscape repo '%s'\n", project, repoP, repoL)
+				fmt.Printf("error: devstats repo '%s' '%s' is not equal to landscape repo '%s'\n", project, repoP, repoL)
 				reposErrs[project] = struct{}{}
 			}
 		}
