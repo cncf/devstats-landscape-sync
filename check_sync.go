@@ -48,6 +48,12 @@ func checkSync() (err error) {
 		"traefik mesh": {},
 		"opengitops":   {},
 	}
+	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
+	ignoreRepo := map[string]struct{}{
+		"capsule":              {},
+		"sealer":               {},
+		"network service mesh": {},
+	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
 	// Capsue has no join data in landscape.yml
@@ -139,16 +145,17 @@ func checkSync() (err error) {
 	namesMapping := make(map[string]string)
 	landscapeNames := make(map[string]struct{})
 	disabledProjects := make(map[string]struct{})
+	reposP := make(map[string]string)
 	joinDatesP := make(map[string]string)
 	incubatingDatesP := make(map[string]string)
 	graduatedDatesP := make(map[string]string)
+	reposL := make(map[string]string)
 	joinDatesL := make(map[string]string)
 	incubatingDatesL := make(map[string]string)
 	graduatedDatesL := make(map[string]string)
 	projectsByStateP := make(map[string]map[string]struct{})
 	projectsByStateL := make(map[string]map[string]struct{})
 	for name, data := range projects.Projects {
-		// MainRepo     string     `yaml:"main_repo"`
 		// ArchivedDate *time.Time  `yaml:"archived_date"`
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
@@ -170,6 +177,7 @@ func checkSync() (err error) {
 			namesMapping[name] = fullName
 			namesMapping[fullName] = name
 		}
+		reposP[fullName] = strings.TrimSpace(strings.ToLower(data.MainRepo))
 		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
 		if data.IncubatingDate != nil {
 			incubatingDatesP[fullName] = data.IncubatingDate.Format("2006-01-02")
@@ -212,12 +220,16 @@ func checkSync() (err error) {
 				if !ok {
 					continue
 				}
-				landscapeNames[name] = struct{}{}
-				_, present := joinDatesL[name]
 				var (
 					joinDt  string
 					incubDt string
 				)
+				landscapeNames[name] = struct{}{}
+				_, present := reposL[name]
+				if !present && item.RepoURL != "" {
+					reposL[name] = strings.Replace(strings.TrimSpace(strings.ToLower(item.RepoURL)), "https://github.com/", "", -1)
+				}
+				_, present = joinDatesL[name]
 				// Only first specified date will be used, no overwrite, especially with blank data
 				if !present && item.Extra.Accepted != "" {
 					dtS := strings.TrimSpace(item.Extra.Accepted)
@@ -265,6 +277,45 @@ func checkSync() (err error) {
 			fmt.Printf("error: missing '%s' in landscape\n", name)
 			landscapeMiss++
 		}
+	}
+	reposErrs := make(map[string]struct{})
+	for project, repoL := range reposL {
+		_, ignore := ignoreRepo[project]
+		if ignore {
+			continue
+		}
+		repoP, ok := reposP[project]
+		if !ok {
+			fmt.Printf("error: landscape '%s' repo '%s' is missing in devstats\n", project, repoL)
+			reposErrs[project] = struct{}{}
+			continue
+		}
+		if repoL != repoP {
+			fmt.Printf("error: landscape '%s' repo '%s' is not equal to devstats repo '%s'\n", project, repoL, repoP)
+			reposErrs[project] = struct{}{}
+		}
+	}
+	for project, repoP := range reposP {
+		_, ignore := ignoreRepo[project]
+		if ignore {
+			continue
+		}
+		repoL, ok := reposL[project]
+		if !ok {
+			fmt.Printf("error: devstats '%s' repo '%s' is missing in landscape\n", project, repoP)
+			reposErrs[project] = struct{}{}
+			continue
+		}
+		if repoL != repoP {
+			_, reported := reposErrs[project]
+			if !reported {
+				fmt.Printf("error: devstats '%s' repo '%s' is not equal to landscape repo '%s'\n", project, repoP, repoL)
+				reposErrs[project] = struct{}{}
+			}
+		}
+	}
+	if len(reposErrs) > 0 {
+		fmt.Printf("%d repos mismatches detected\n", len(reposErrs))
 	}
 	joinDatesErrs := make(map[string]struct{})
 	for project, joinDateL := range joinDatesL {
