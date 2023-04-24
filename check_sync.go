@@ -37,6 +37,14 @@ func checkSync() (err error) {
 		"kubevip":         {},
 		"inspektorgadget": {},
 	}
+	// Some projects in Landscape are listed twice
+	// Fort example Cilum was renamed to Tetragon and is listed twice
+	// Those entries should not be reported as missing in DevStats
+	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
+	ignoreMissing := map[string]struct{}{
+		"tetragon":     {},
+		"traefik mesh": {},
+	}
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
 		landscapePath = "https://raw.githubusercontent.com/cncf/landscape/master/landscape.yml"
@@ -102,6 +110,7 @@ func checkSync() (err error) {
 	projectsNames := make(map[string]struct{})
 	namesMapping := make(map[string]string)
 	landscapeNames := make(map[string]struct{})
+	disabledProjects := make(map[string]struct{})
 	joinDatesP := make(map[string]string)
 	joinDatesL := make(map[string]string)
 	for name, data := range projects.Projects {
@@ -113,12 +122,13 @@ func checkSync() (err error) {
 			GraduatedDate    *time.Time        `yaml:"graduated_date"`
 			ArchivedDate     *time.Time        `yaml:"archived_date"`
 		*/
-		if data.Disabled {
-			continue
-		}
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
 		if skip {
+			continue
+		}
+		if data.Disabled {
+			disabledProjects[name] = struct{}{}
 			continue
 		}
 		fullName := strings.ToLower(data.FullName)
@@ -132,7 +142,7 @@ func checkSync() (err error) {
 			namesMapping[name] = fullName
 			namesMapping[fullName] = name
 		}
-		joinDatesP[data.FullName] = data.JoinDate.Format("2006-01-02")
+		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
 	}
 	for _, data := range landscape.Landscape {
 		for _, scat := range data.Subcategories {
@@ -142,10 +152,18 @@ func checkSync() (err error) {
 				if !ok {
 					mappedName, okMapped := namesMapping[name]
 					if okMapped {
-						_, ok := projectsNames[mappedName]
+						_, ok = projectsNames[mappedName]
 						if ok {
 							name = mappedName
 						}
+					}
+				}
+				// Project can be missing in DevStats:projects.yaml
+				if !ok && item.Extra.Accepted != "" {
+					_, disabled := disabledProjects[name]
+					_, ignored := ignoreMissing[name]
+					if !disabled && !ignored {
+						fmt.Printf("error: missing '%s' in devstats projects\n", name)
 					}
 				}
 				if ok {
