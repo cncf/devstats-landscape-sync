@@ -434,6 +434,8 @@ func checkSync() (err error) {
 	if len(graduatedDatesErrs) > 0 {
 		fmt.Printf("%d graduated dates mismatches detected\n", len(graduatedDatesErrs))
 	}
+	statusCountsL := make(map[string]int)
+	statusCountsP := make(map[string]int)
 	statusErrs := make(map[string]struct{})
 	for status, projects := range projectsByStateL {
 		for project := range projects {
@@ -453,7 +455,14 @@ func checkSync() (err error) {
 				}
 				fmt.Printf("\n")
 				statusErrs[project] = struct{}{}
+				continue
 			}
+			count, ok := statusCountsL[status]
+			if !ok {
+				statusCountsL[status] = 1
+				continue
+			}
+			statusCountsL[status] = count + 1
 		}
 	}
 	for status, projects := range projectsByStateP {
@@ -478,10 +487,24 @@ func checkSync() (err error) {
 					statusErrs[project] = struct{}{}
 				}
 			}
+			count, ok := statusCountsP[status]
+			if !ok {
+				statusCountsP[status] = 1
+				continue
+			}
+			statusCountsP[status] = count + 1
 		}
 	}
 	if len(statusErrs) > 0 {
 		fmt.Printf("%d status mismatches detected\n", len(statusErrs))
+	}
+	for status, countL := range statusCountsL {
+		countP, ok := statusCountsP[status]
+		if ok && countP == countL {
+			fmt.Printf("%s: %d projects\n", status, countL)
+			continue
+		}
+		fmt.Printf("%s: %d landscape projects, %d devstats projects\n", status, countL, countP)
 	}
 	return
 }
