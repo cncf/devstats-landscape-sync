@@ -4,9 +4,7 @@ error: landscape repo not equal to devstats repo 'linkerd' 'linkerd/linkerd2' <=
 error: landscape repo not equal to devstats repo 'metal³' 'metal3-io/baremetal-operator' <=> 'metal3-io/cluster-api-provider-metal3'
 error: landscape repo not equal to devstats repo 'buildpacks' 'buildpacks/pack' <=> 'buildpacks/lifecycle'
 error: landscape repo not equal to devstats repo 'skooner' 'skooner-k8s/skooner' <=> 'skooner-k8s/k8dash'
+error: landscape repo not equal to devstats repo 'devspace' 'devspace-sh/devspace' <=> 'devspace-cloud/devspace-cloud'
 error: landscape repo not equal to devstats repo 'the update framework (tuf)' 'theupdateframework/python-tuf' <=> 'theupdateframework/tuf'
 error: landscape repo not equal to devstats repo 'dragonfly' 'dragonflyoss/dragonfly2' <=> 'dragonflyoss/dragonfly'
-error: landscape repo not equal to devstats repo 'konveyor' 'konveyor/community' <=> 'konveyor/mig-operator'
-error: landscape repo not equal to devstats repo 'opentelemetry' 'open-telemetry/community' <=> 'open-telemetry/opentelemetry-java'
-error: landscape repo not equal to devstats repo 'openfeature' 'open-feature/community' <=> 'open-feature/spec'
-error: repos mismatches detected: 17
+error: repos mismatches detected: 9
