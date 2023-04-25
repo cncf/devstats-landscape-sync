@@ -132,7 +132,7 @@ func checkSync() (err error) {
 	// Fort example Cilum was renamed to Tetragon and is listed twice
 	// Those entries should not be reported as missing in DevStats
 	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
-	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DEvStats page for it)
+	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DevStats page for it)
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
 		"traefik mesh": {},
@@ -169,7 +169,7 @@ func checkSync() (err error) {
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
 	// Capsue has no join data in landscape.yml
 	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
-	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17'
+	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17' (but technically the same)
 	ignoreJoinDate := map[string]struct{}{
 		"kubedl":       {},
 		"capsule":      {},
@@ -177,8 +177,8 @@ func checkSync() (err error) {
 		"clusterpedia": {},
 	}
 	// Some incubating dates present in landscape and not present in DevStats can be ignored: this is for projects which joined with level >= incubating
-	// Such projects have no incubation dates in DevStats becaus ethey were at least such at join time
-	// The opposite is not true, we shoudl always have incubating dates in landscape.yml
+	// Such projects have no incubation dates in DevStats because they were at least such at join time
+	// The opposite is not true, we should always have incubating dates in landscape.yml
 	// "kubevirt" had no incubation date in landscape.yml and it moved to incubation but date is unknown: this was fixed in landscape at 4/25/23.
 	ignoreIncubatingDate := map[string]struct{}{}
 	ignoreGraduatedDate := map[string]struct{}{}
