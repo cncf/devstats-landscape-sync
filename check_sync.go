@@ -148,6 +148,8 @@ func checkSync() (err error) {
 		"sealer":                  {"alibaba/sealer", "sealerio/sealer"},
 		"network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
 		"confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
+		"piraeus datastore":       {"piraeusdatastore/piraeus", "piraeusdatastore/piraeus-operator"},
+		"devspace":                {"devspace-sh/devspace", "devspace-cloud/devspace-cloud"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
