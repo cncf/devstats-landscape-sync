@@ -73,6 +73,7 @@ func sendStatusEmail(body, recipients string) error {
 		if err != nil {
 			fmt.Printf("Error sending email to %s: %+v\n%s\n", recipient, err, res)
 		}
+		fmt.Printf("sent email to %s\n", recipient)
 	}
 	return nil
 }
