@@ -26,3 +26,4 @@ go.work
 /check_sync
 /go.sum
 /out
+/run.log
