@@ -52,6 +52,7 @@ func sendStatusEmail(body, recipients string) error {
 	html := "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>\n"
 	htmlBody := fmt.Sprintf(html, title, strings.Replace(body, "\n", "<br/>\n", -1))
 	hostname, _ := os.Hostname()
+	hostname += ".io"
 	ary := strings.Split(recipients, ",")
 	for _, recipient := range ary {
 		recipient = strings.TrimSpace(recipient)
