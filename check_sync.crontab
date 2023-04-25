@@ -1,0 +1,2 @@
+# CNCF devstats.cncf.io K8s node-0
+0 3 * * * GOPATH=/root/go GOROOT=/usr/local/go PATH=$PATH:/usr/sbin:/root/go/bin/:/usr/local/go/bin /root/go/src/github.com/cncf/devstats-landscape-sync/check_sync 1>>/tmp/check_sync.log 2>>/tmp/check_sync.err

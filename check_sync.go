@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -13,7 +15,93 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+func execCommandWithStdin(cmdAndArgs []string, stdIn *bytes.Buffer) (string, error) {
+	var (
+		stdOut bytes.Buffer
+		stdErr bytes.Buffer
+	)
+	command := cmdAndArgs[0]
+	arguments := cmdAndArgs[1:]
+	cmd := exec.Command(command, arguments...)
+	cmd.Stderr = &stdErr
+	cmd.Stdout = &stdOut
+	cmd.Stdin = stdIn
+	err := cmd.Start()
+	if err != nil {
+		return "", err
+	}
+	err = cmd.Wait()
+	if err != nil {
+		outStr := stdOut.String()
+		if len(outStr) > 0 {
+			fmt.Printf("STDOUT:\n%v\n", outStr)
+		}
+		errStr := stdErr.String()
+		if len(errStr) > 0 {
+			fmt.Printf("STDERR:\n%v\n", errStr)
+		}
+		return stdOut.String(), err
+	}
+	outStr := stdOut.String()
+	return outStr, nil
+}
+
+func sendStatusEmail(body, recipients string) error {
+	fmt.Printf("sending email(s) to %s\n", recipients)
+	title := "DevStats <=> landscape sync status"
+	html := "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <title>%s</title>\n</head>\n<body>\n%s\n</body>\n</html>\n"
+	htmlBody := fmt.Sprintf(html, title, strings.Replace(body, "\n", "<br/>\n", -1))
+	hostname, _ := os.Hostname()
+	ary := strings.Split(recipients, ",")
+	for _, recipient := range ary {
+		recipient = strings.TrimSpace(recipient)
+		//fmt.Printf("sending email to %s\n", recipient)
+		data := fmt.Sprintf(
+			"From: devstats-landscape-sync@%s\n"+
+				"To: %s\n"+
+				"Subject: %s\n"+
+				"Content-Type: text/html\n"+
+				"MIME-Version: 1.0\n"+
+				"\n"+
+				"%s\n",
+			hostname,
+			recipient,
+			title,
+			htmlBody,
+		)
+		res, err := execCommandWithStdin([]string{"sendmail", recipient}, bytes.NewBuffer([]byte(data)))
+		if err != nil {
+			fmt.Printf("Error sending email to %s: %+v\n%s\n", recipient, err, res)
+		}
+	}
+	return nil
+}
+
 func checkSync() (err error) {
+	dtStart := time.Now()
+	recipients := os.Getenv("EMAIL_TO")
+	if recipients == "" {
+		recipients = "lukaszgryglicki@o2.pl,lgryglicki@cncf.io"
+	}
+	msgs := []string{}
+	report := false
+	msgPrintf := func(format string, args ...interface{}) {
+		str := fmt.Sprintf(format, args...)
+		msgs = append(msgs, str)
+	}
+	defer func() {
+		if report {
+			for _, msg := range msgs {
+				fmt.Printf("%s", msg)
+			}
+			skipEmail := os.Getenv("SKIP_EMAIL")
+			if skipEmail == "" {
+				sendStatusEmail(strings.Join(msgs, ""), recipients)
+			}
+		}
+		dtEnd := time.Now()
+		fmt.Printf("time: %v\n", dtEnd.Sub(dtStart))
+	}()
 	// Some names are different in DevStats than in landscape.yml (not so many for 170+ projects)
 	devstats2landscape := map[string]string{
 		"foniod":                              "fonio",
@@ -88,19 +176,22 @@ func checkSync() (err error) {
 		var response *http.Response
 		response, err = http.Get(landscapePath)
 		if err != nil {
-			fmt.Printf("http.Get '%s' -> %+v", landscapePath, err)
+			msgPrintf("http.Get '%s' -> %+v", landscapePath, err)
+			report = true
 			return
 		}
 		defer func() { _ = response.Body.Close() }()
 		dataL, err = ioutil.ReadAll(response.Body)
 		if err != nil {
-			fmt.Printf("ioutil.ReadAll '%s' -> %+v", landscapePath, err)
+			msgPrintf("ioutil.ReadAll '%s' -> %+v", landscapePath, err)
+			report = true
 			return
 		}
 	} else {
 		dataL, err = ioutil.ReadFile(landscapePath)
 		if err != nil {
-			fmt.Printf("ioutil.Readfile: unable to read file '%s': %v", landscapePath, err)
+			msgPrintf("ioutil.Readfile: unable to read file '%s': %v", landscapePath, err)
+			report = true
 			return
 		}
 	}
@@ -113,32 +204,37 @@ func checkSync() (err error) {
 		var response *http.Response
 		response, err = http.Get(projectsPath)
 		if err != nil {
-			fmt.Printf("http.Get '%s' -> %+v", projectsPath, err)
+			msgPrintf("http.Get '%s' -> %+v", projectsPath, err)
+			report = true
 			return
 		}
 		defer func() { _ = response.Body.Close() }()
 		dataP, err = ioutil.ReadAll(response.Body)
 		if err != nil {
-			fmt.Printf("ioutil.ReadAll '%s' -> %+v", projectsPath, err)
+			msgPrintf("ioutil.ReadAll '%s' -> %+v", projectsPath, err)
+			report = true
 			return
 		}
 	} else {
 		dataP, err = ioutil.ReadFile(projectsPath)
 		if err != nil {
-			fmt.Printf("ioutil.ReadFile: unable to read file '%s': %v", projectsPath, err)
+			msgPrintf("ioutil.ReadFile: unable to read file '%s': %v", projectsPath, err)
+			report = true
 			return
 		}
 	}
 	var landscape types.LandscapeList
 	err = yaml.Unmarshal(dataL, &landscape)
 	if err != nil {
-		fmt.Printf("yaml.Unmarshal '%s' -> %+v", landscapePath, err)
+		msgPrintf("yaml.Unmarshal '%s' -> %+v", landscapePath, err)
+		report = true
 		return
 	}
 	var projects devstatscode.AllProjects
 	err = yaml.Unmarshal(dataP, &projects)
 	if err != nil {
-		fmt.Printf("yaml.Unmarshal '%s' -> %+v", projectsPath, err)
+		msgPrintf("yaml.Unmarshal '%s' -> %+v", projectsPath, err)
+		report = true
 		return
 	}
 	projectsNames := make(map[string]struct{})
@@ -212,7 +308,8 @@ func checkSync() (err error) {
 					_, disabled := disabledProjects[name]
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
-						fmt.Printf("error: missing in devstats projects: '%s'\n", name)
+						msgPrintf("error: missing in devstats projects: '%s'\n", name)
+						report = true
 						devstatsMiss++
 					}
 				}
@@ -273,7 +370,8 @@ func checkSync() (err error) {
 	for name := range projectsNames {
 		_, ok := landscapeNames[name]
 		if !ok {
-			fmt.Printf("error: missing in landscape: '%s'\n", name)
+			msgPrintf("error: missing in landscape: '%s'\n", name)
+			report = true
 			landscapeMiss++
 		}
 	}
@@ -285,12 +383,14 @@ func checkSync() (err error) {
 		}
 		repoP, ok := reposP[project]
 		if !ok {
-			fmt.Printf("error: landscape repo missing in devstats '%s' '%s'\n", project, repoL)
+			msgPrintf("error: landscape repo missing in devstats '%s' '%s'\n", project, repoL)
+			report = true
 			reposErrs[project] = struct{}{}
 			continue
 		}
 		if repoL != repoP {
-			fmt.Printf("error: landscape repo not equal to devstats repo '%s' '%s' <=> '%s'\n", project, repoL, repoP)
+			msgPrintf("error: landscape repo not equal to devstats repo '%s' '%s' <=> '%s'\n", project, repoL, repoP)
+			report = true
 			reposErrs[project] = struct{}{}
 		}
 	}
@@ -301,20 +401,23 @@ func checkSync() (err error) {
 		}
 		repoL, ok := reposL[project]
 		if !ok {
-			fmt.Printf("error: devstats repo missing in landscape '%s' '%s'\n", project, repoP)
+			msgPrintf("error: devstats repo missing in landscape '%s' '%s'\n", project, repoP)
+			report = true
 			reposErrs[project] = struct{}{}
 			continue
 		}
 		if repoL != repoP {
 			_, reported := reposErrs[project]
 			if !reported {
-				fmt.Printf("error: devstats repo not equal to landscape repo '%s' '%s' <=> '%s'\n", project, repoP, repoL)
+				msgPrintf("error: devstats repo not equal to landscape repo '%s' '%s' <=> '%s'\n", project, repoP, repoL)
+				report = true
 				reposErrs[project] = struct{}{}
 			}
 		}
 	}
 	if len(reposErrs) > 0 {
-		fmt.Printf("error: repos mismatches detected: %d\n", len(reposErrs))
+		msgPrintf("error: repos mismatches detected: %d\n", len(reposErrs))
+		report = true
 	}
 	joinDatesErrs := make(map[string]struct{})
 	for project, joinDateL := range joinDatesL {
@@ -324,12 +427,14 @@ func checkSync() (err error) {
 		}
 		joinDateP, ok := joinDatesP[project]
 		if !ok {
-			fmt.Printf("error: landscape join date missing in devstats '%s' '%s'\n", project, joinDateL)
+			msgPrintf("error: landscape join date missing in devstats '%s' '%s'\n", project, joinDateL)
+			report = true
 			joinDatesErrs[project] = struct{}{}
 			continue
 		}
 		if joinDateL != joinDateP {
-			fmt.Printf("error: landscape join date not equal to devstats join date '%s' '%s' <=> '%s'\n", project, joinDateL, joinDateP)
+			msgPrintf("error: landscape join date not equal to devstats join date '%s' '%s' <=> '%s'\n", project, joinDateL, joinDateP)
+			report = true
 			joinDatesErrs[project] = struct{}{}
 		}
 	}
@@ -340,20 +445,22 @@ func checkSync() (err error) {
 		}
 		joinDateL, ok := joinDatesL[project]
 		if !ok {
-			fmt.Printf("error: devstats join adte missig in landscape '%s' '%s'\n", project, joinDateP)
+			msgPrintf("error: devstats join adte missig in landscape '%s' '%s'\n", project, joinDateP)
+			report = true
 			joinDatesErrs[project] = struct{}{}
 			continue
 		}
 		if joinDateL != joinDateP {
 			_, reported := joinDatesErrs[project]
 			if !reported {
-				fmt.Printf("error: devstats join date not equal to landscape join date '%s' '%s' <=> '%s'\n", project, joinDateP, joinDateL)
+				msgPrintf("error: devstats join date not equal to landscape join date '%s' '%s' <=> '%s'\n", project, joinDateP, joinDateL)
+				report = true
 				joinDatesErrs[project] = struct{}{}
 			}
 		}
 	}
 	if len(joinDatesErrs) > 0 {
-		fmt.Printf("%d join dates mismatches detected\n", len(joinDatesErrs))
+		msgPrintf("error: %d join dates mismatches detected\n", len(joinDatesErrs))
 	}
 	incubatingDatesErrs := make(map[string]struct{})
 	for project, incubatingDateL := range incubatingDatesL {
@@ -363,12 +470,14 @@ func checkSync() (err error) {
 		}
 		incubatingDateP, ok := incubatingDatesP[project]
 		if !ok {
-			fmt.Printf("error: landscape incubating date missing in devstats '%s' '%s'\n", project, incubatingDateL)
+			msgPrintf("error: landscape incubating date missing in devstats '%s' '%s'\n", project, incubatingDateL)
+			report = true
 			incubatingDatesErrs[project] = struct{}{}
 			continue
 		}
 		if incubatingDateL != incubatingDateP {
-			fmt.Printf("error: landscape incubating date is not equal to devstats incubating date '%s' '%s' <=> '%s'\n", project, incubatingDateL, incubatingDateP)
+			msgPrintf("error: landscape incubating date is not equal to devstats incubating date '%s' '%s' <=> '%s'\n", project, incubatingDateL, incubatingDateP)
+			report = true
 			incubatingDatesErrs[project] = struct{}{}
 		}
 	}
@@ -379,20 +488,23 @@ func checkSync() (err error) {
 		}
 		incubatingDateL, ok := incubatingDatesL[project]
 		if !ok {
-			fmt.Printf("error: devstats incubating date missing in landscape '%s' '%s'\n", project, incubatingDateP)
+			msgPrintf("error: devstats incubating date missing in landscape '%s' '%s'\n", project, incubatingDateP)
+			report = true
 			incubatingDatesErrs[project] = struct{}{}
 			continue
 		}
 		if incubatingDateL != incubatingDateP {
 			_, reported := incubatingDatesErrs[project]
 			if !reported {
-				fmt.Printf("error: devstats incubating date is not equal to landscape incubating date '%s' '%s' <=> '%s'\n", project, incubatingDateP, incubatingDateL)
+				msgPrintf("error: devstats incubating date is not equal to landscape incubating date '%s' '%s' <=> '%s'\n", project, incubatingDateP, incubatingDateL)
+				report = true
 				incubatingDatesErrs[project] = struct{}{}
 			}
 		}
 	}
 	if len(incubatingDatesErrs) > 0 {
-		fmt.Printf("incubating dates mismatches detected: %d\n", len(incubatingDatesErrs))
+		msgPrintf("error: incubating dates mismatches detected: %d\n", len(incubatingDatesErrs))
+		report = true
 	}
 	graduatedDatesErrs := make(map[string]struct{})
 	for project, graduatedDateL := range graduatedDatesL {
@@ -402,12 +514,14 @@ func checkSync() (err error) {
 		}
 		graduatedDateP, ok := graduatedDatesP[project]
 		if !ok {
-			fmt.Printf("error: landscape graduated date missing in devstats '%s' '%s'\n", project, graduatedDateL)
+			msgPrintf("error: landscape graduated date missing in devstats '%s' '%s'\n", project, graduatedDateL)
+			report = true
 			graduatedDatesErrs[project] = struct{}{}
 			continue
 		}
 		if graduatedDateL != graduatedDateP {
-			fmt.Printf("error: landscape graduated date not equal to devstats graduated date '%s' '%s' <=> '%s'\n", project, graduatedDateL, graduatedDateP)
+			msgPrintf("error: landscape graduated date not equal to devstats graduated date '%s' '%s' <=> '%s'\n", project, graduatedDateL, graduatedDateP)
+			report = true
 			graduatedDatesErrs[project] = struct{}{}
 		}
 	}
@@ -418,20 +532,22 @@ func checkSync() (err error) {
 		}
 		graduatedDateL, ok := graduatedDatesL[project]
 		if !ok {
-			fmt.Printf("error: devstats graduated date missing in landscape '%s' '%s'\n", project, graduatedDateP)
+			msgPrintf("error: devstats graduated date missing in landscape '%s' '%s'\n", project, graduatedDateP)
+			report = true
 			graduatedDatesErrs[project] = struct{}{}
 			continue
 		}
 		if graduatedDateL != graduatedDateP {
 			_, reported := graduatedDatesErrs[project]
 			if !reported {
-				fmt.Printf("error: devstats graduated date not equal to landscape graduated date '%s' '%s' <=> '%s'\n", project, graduatedDateP, graduatedDateL)
+				msgPrintf("error: devstats graduated date not equal to landscape graduated date '%s' '%s' <=> '%s'\n", project, graduatedDateP, graduatedDateL)
+				report = true
 				graduatedDatesErrs[project] = struct{}{}
 			}
 		}
 	}
 	if len(graduatedDatesErrs) > 0 {
-		fmt.Printf("graduated dates mismatches detected: %d\n", len(graduatedDatesErrs))
+		msgPrintf("error: graduated dates mismatches detected: %d\n", len(graduatedDatesErrs))
 	}
 	statusCountsL := make(map[string]int)
 	statusCountsP := make(map[string]int)
@@ -444,15 +560,16 @@ func checkSync() (err error) {
 			}
 			_, ok := projectsByStateP[status][project]
 			if !ok {
-				fmt.Printf("error: landscape is missing %s '%s'", status, project)
+				msgPrintf("error: landscape is missing %s '%s'", status, project)
+				report = true
 				for otherStatus := range projectsByStateP {
 					_, ok := projectsByStateP[otherStatus][project]
 					if ok {
-						fmt.Printf(", but is present in %s", otherStatus)
+						msgPrintf(", but is present in %s", otherStatus)
 						break
 					}
 				}
-				fmt.Printf("\n")
+				msgPrintf("\n")
 				statusErrs[project] = struct{}{}
 				continue
 			}
@@ -474,15 +591,16 @@ func checkSync() (err error) {
 			if !ok {
 				_, reported := statusErrs[project]
 				if !reported {
-					fmt.Printf("error: devstats is missing %s '%s'", status, project)
+					msgPrintf("error: devstats is missing %s '%s'", status, project)
+					report = true
 					for otherStatus := range projectsByStateL {
 						_, ok := projectsByStateL[otherStatus][project]
 						if ok {
-							fmt.Printf(", but is present in %s", otherStatus)
+							msgPrintf(", but is present in %s", otherStatus)
 							break
 						}
 					}
-					fmt.Printf("\n")
+					msgPrintf("\n")
 					statusErrs[project] = struct{}{}
 				}
 			}
@@ -495,24 +613,23 @@ func checkSync() (err error) {
 		}
 	}
 	if len(statusErrs) > 0 {
-		fmt.Printf("status mismatches detected: %d\n", len(statusErrs))
+		msgPrintf("error: status mismatches detected: %d\n", len(statusErrs))
+		report = true
 	}
 	for status, countL := range statusCountsL {
 		countP, ok := statusCountsP[status]
 		if ok && countP == countL {
-			fmt.Printf("%s: %d projects\n", status, countL)
+			msgPrintf("%s: %d projects\n", status, countL)
 			continue
 		}
-		fmt.Printf("%s: %d landscape projects, %d devstats projects\n", status, countL, countP)
+		msgPrintf("error: %s: %d landscape projects, %d devstats projects\n", status, countL, countP)
+		report = true
 	}
 	return
 }
 
 func main() {
-	dtStart := time.Now()
 	err := checkSync()
-	dtEnd := time.Now()
-	fmt.Printf("time: %v\n", dtEnd.Sub(dtStart))
 	if err != nil {
 		os.Exit(1)
 	}

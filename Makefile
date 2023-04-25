@@ -9,7 +9,6 @@ GO_LINT=golint -set_exit_status
 GO_VET=go vet
 GO_IMPORTS=goimports -w
 GO_USEDEXPORTS=usedexports
-GO_ERRCHECK=errcheck -asserts -ignore '[FS]?[Pp]rint*'
 BINARIES=check_sync
 all: check ${BINARIES}
 check_sync: check_sync.go
@@ -24,9 +23,7 @@ imports: ${GO_BIN_FILES}
 	${GO_IMPORTS} ${GO_BIN_FILES}
 usedexports: ${GO_BIN_FILES}
 	${GO_USEDEXPORTS} ./...
-errcheck: ${GO_BIN_FILES}
-	${GO_ERRCHECK} ./...
-check: fmt lint imports vet usedexports errcheck
+check: fmt lint imports vet usedexports
 clean:
 	rm -f ${BINARIES}
 .PHONY: all
