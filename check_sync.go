@@ -142,6 +142,10 @@ func checkSync() (err error) {
 	// For some repos we know that landscape.yml has other repo than DevStats
 	// For example Sealer still has an old Alibaba repo 'alibaba/sealer'
 	// NSM (network service mesh) refers to an old archived repo 'networkservicemesh/networkservicemesh'
+	// For notary -> notation (V1 to V2) there are not enough tags yet on V2 and much less commits, so we prefer to use V1 in DevStats
+	// Also there was a discussion about splitting out Notary V2 into a separate project, so not updating main repo to match landscape
+	// Knative landscape repo 'community' is way smaller than devstats one 'serving' and has no releases, so DevStats continues to use its own
+	// OCM (open cluster management) devstats's repo 'api' has more commits and has tags, while landscape 'ocm' has no tags/releases
 	// Format is 2 strings: expected landscape repo, expected devstats repo
 	ignoreRepo := map[string][2]string{
 		"capsule":                 {"clastix/capsule", "capsule-rs/capsule"},
@@ -150,6 +154,9 @@ func checkSync() (err error) {
 		"confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
 		"piraeus datastore":       {"piraeusdatastore/piraeus", "piraeusdatastore/piraeus-operator"},
 		"devspace":                {"devspace-sh/devspace", "devspace-cloud/devspace-cloud"},
+		"notary":                  {"notaryproject/notary", "notaryproject/notation"},
+		"knative":                 {"knative/community", "knative/serving"},
+		"open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
