@@ -139,10 +139,15 @@ func checkSync() (err error) {
 		"opengitops":   {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
-	ignoreRepo := map[string]struct{}{
-		"capsule":              {},
-		"sealer":               {},
-		"network service mesh": {},
+	// For some repos we know that landscape.yml has other repo than DevStats
+	// For example Sealer still has an old Alibaba repo 'alibaba/sealer'
+	// NSM (network service mesh) refers to an old archived repo 'networkservicemesh/networkservicemesh'
+	// Format is 2 strings: expected landscape repo, expected devstats repo
+	ignoreRepo := map[string][2]string{
+		"capsule":                 {"clastix/capsule", "capsule-rs/capsule"},
+		"sealer":                  {"alibaba/sealer", "sealerio/sealer"},
+		"network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
+		"confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -379,8 +384,14 @@ func checkSync() (err error) {
 	}
 	reposErrs := make(map[string]struct{})
 	for project, repoL := range reposL {
-		_, ignore := ignoreRepo[project]
+		ignored, ignore := ignoreRepo[project]
 		if ignore {
+			if ignored[0] == repoL {
+				continue
+			}
+			msgPrintf("error: ignored landscape repo is incorrect '%s' '%s' <=> '%s'\n", project, repoL, ignored[0])
+			report = true
+			reposErrs[project] = struct{}{}
 			continue
 		}
 		repoP, ok := reposP[project]
@@ -397,8 +408,14 @@ func checkSync() (err error) {
 		}
 	}
 	for project, repoP := range reposP {
-		_, ignore := ignoreRepo[project]
+		ignored, ignore := ignoreRepo[project]
 		if ignore {
+			if ignored[1] == repoP {
+				continue
+			}
+			msgPrintf("error: ignored devstats repo is incorrect '%s' '%s' <=> '%s'\n", project, repoP, ignored[1])
+			report = true
+			reposErrs[project] = struct{}{}
 			continue
 		}
 		repoL, ok := reposL[project]
