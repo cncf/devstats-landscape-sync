@@ -179,10 +179,8 @@ func checkSync() (err error) {
 	// Some incubating dates present in landscape and not present in DevStats can be ignored: this is for projects which joined with level >= incubating
 	// Such projects have no incubation dates in DevStats becaus ethey were at least such at join time
 	// The opposite is not true, we shoudl always have incubating dates in landscape.yml
-	// "kubevirt" has no incubation date in landscape.yml and it moved to incubation but date is unknown
-	ignoreIncubatingDate := map[string]struct{}{
-		"kubevirt": {},
-	}
+	// "kubevirt" had no incubation date in landscape.yml and it moved to incubation but date is unknown: this was fixed in landscape at 4/25/23.
+	ignoreIncubatingDate := map[string]struct{}{}
 	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects tstatuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
