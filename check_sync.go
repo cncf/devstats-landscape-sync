@@ -146,7 +146,6 @@ func checkSync() (err error) {
 	// Also there was a discussion about splitting out Notary V2 into a separate project, so not updating main repo to match landscape
 	// Knative landscape repo 'community' is way smaller than devstats one 'serving' and has no releases, so DevStats continues to use its own
 	// OCM (open cluster management) devstats's repo 'api' has more commits and has tags, while landscape 'ocm' has no tags/releases
-	// The same with Konveyor 'mig-operator' has tags and more commits, 'community' has no tags
 	// Same with OpenTelemetry 'opentelemetry-java' vs. 'community' repos (less commits and no tags/releases on community repo).
 	// For OpenFeature 'community' repo has more commits than 'spec', but the latter has tags/releases needed for
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
@@ -161,7 +160,6 @@ func checkSync() (err error) {
 		"notary":                  {"notaryproject/notary", "notaryproject/notation"},
 		"knative":                 {"knative/community", "knative/serving"},
 		"open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
-		"konveyor":                {"konveyor/community", "konveyor/mig-operator"},
 		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		"openfeature":             {"open-feature/community", "open-feature/spec"},
 	}
