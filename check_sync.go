@@ -303,13 +303,18 @@ func checkSync() (err error) {
 	joinDatesP := make(map[string]string)
 	incubatingDatesP := make(map[string]string)
 	graduatedDatesP := make(map[string]string)
+	reposD := make(map[string]string)
+	joinDatesD := make(map[string]string)
+	incubatingDatesD := make(map[string]string)
+	graduatedDatesD := make(map[string]string)
 	reposL := make(map[string]string)
 	joinDatesL := make(map[string]string)
 	incubatingDatesL := make(map[string]string)
 	graduatedDatesL := make(map[string]string)
 	projectsByStateP := make(map[string]map[string]struct{})
+	projectsByStateD := make(map[string]map[string]struct{})
 	projectsByStateL := make(map[string]map[string]struct{})
-	// Iterate devstats projects.yaml
+	// Iterate devstats projects.yaml to get data
 	for name, data := range projects.Projects {
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
@@ -346,7 +351,43 @@ func checkSync() (err error) {
 		}
 		projectsByStateP[status][fullName] = struct{}{}
 	}
-	// Iterate devstats-docker-images projects.yaml
+	// Iterate devstats-docker-images projects.yaml to get data
+	for name, data := range projects2.Projects {
+		name = strings.ToLower(name)
+		_, skip := skipList[name]
+		if skip {
+			continue
+		}
+		if data.Disabled {
+			disabledProjects[name] = struct{}{}
+			continue
+		}
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		if status == "-" || status == "" {
+			continue
+		}
+		fullName := strings.ToLower(data.FullName)
+		mapped, ok := devstats2landscape[fullName]
+		if ok {
+			fullName = mapped
+		}
+		fullName = strings.ToLower(fullName)
+		projectsNames[fullName] = struct{}{}
+		reposD[fullName] = strings.TrimSpace(strings.ToLower(data.MainRepo))
+		joinDatesD[fullName] = data.JoinDate.Format("2006-01-02")
+		if data.IncubatingDate != nil {
+			incubatingDatesD[fullName] = data.IncubatingDate.Format("2006-01-02")
+		}
+		if data.GraduatedDate != nil {
+			graduatedDatesD[fullName] = data.GraduatedDate.Format("2006-01-02")
+		}
+		_, ok = projectsByStateD[status]
+		if !ok {
+			projectsByStateD[status] = make(map[string]struct{})
+		}
+		projectsByStateD[status][fullName] = struct{}{}
+	}
+	// Iterate devstats-docker-images projects.yaml to check with devstats projects.yaml
 	diffFromDocker := 0
 	for name, data := range projects2.Projects {
 		name = strings.ToLower(name)
@@ -358,7 +399,7 @@ func checkSync() (err error) {
 			continue
 		}
 		status := strings.TrimSpace(strings.ToLower(data.Status))
-		if status == "-" {
+		if status == "-" || status == "" {
 			continue
 		}
 		fullName := strings.ToLower(data.FullName)
@@ -416,7 +457,68 @@ func checkSync() (err error) {
 		msgPrintf("error: devstats-docker-images projects.yaml differences vs devstats projects.yaml: %d\n", diffFromDocker)
 		report = true
 	}
-	// Iterate landscape.yml
+	// Iterate devstats-docker-images projects.yaml to check with devstats projects.yaml
+	diffInDocker := 0
+	for name, data := range projects.Projects {
+		name = strings.ToLower(name)
+		_, skip := skipList[name]
+		if skip {
+			continue
+		}
+		if data.Disabled {
+			continue
+		}
+		fullName := strings.ToLower(data.FullName)
+		mapped, ok := devstats2landscape[fullName]
+		if ok {
+			fullName = mapped
+		}
+		fullName = strings.ToLower(fullName)
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		_, ok = projectsByStateD[status][fullName]
+		if !ok {
+			msgPrintf("error: missing or different status of devstats project in docker projects: %s '%s'\n", status, fullName)
+			report = true
+			diffInDocker++
+		}
+		repoP := strings.TrimSpace(strings.ToLower(data.MainRepo))
+		repoD, ok := reposD[fullName]
+		if !ok || repoD != repoP {
+			msgPrintf("error: missing or different devstats main repo in docker projects: %s '%s' <=> '%s'\n", fullName, repoP, repoD)
+			report = true
+			diffInDocker++
+		}
+		joinDateP := data.JoinDate.Format("2006-01-02")
+		joinDateD, ok := joinDatesD[fullName]
+		if !ok || joinDateD != joinDateP {
+			msgPrintf("error: missing or different devstats join date in docker projects: %s '%s' <=> '%s'\n", fullName, joinDateP, joinDateD)
+			report = true
+			diffInDocker++
+		}
+		if data.IncubatingDate != nil {
+			incubatingDateP := data.IncubatingDate.Format("2006-01-02")
+			incubatingDateD, ok := incubatingDatesD[fullName]
+			if !ok || incubatingDateD != incubatingDateP {
+				msgPrintf("error: missing or different devstats incubating date in docker projects: %s '%s' <=> '%s'\n", fullName, incubatingDateP, incubatingDateD)
+				report = true
+				diffInDocker++
+			}
+		}
+		if data.GraduatedDate != nil {
+			graduatedDateP := data.GraduatedDate.Format("2006-01-02")
+			graduatedDateD, ok := graduatedDatesD[fullName]
+			if !ok || graduatedDateD != graduatedDateP {
+				msgPrintf("error: missing or different devstats graduated date in docker projects: %s '%s' <=> '%s'\n", fullName, graduatedDateP, graduatedDateD)
+				report = true
+				diffInDocker++
+			}
+		}
+	}
+	if diffInDocker > 0 {
+		msgPrintf("error: devstats projects.yaml differences vs devstats-docker-images projects.yaml: %d\n", diffInDocker)
+		report = true
+	}
+	// Iterate landscape.yml to compare with devstats
 	devstatsMiss := 0
 	for _, data := range landscape.Landscape {
 		for _, scat := range data.Subcategories {
@@ -505,6 +607,7 @@ func checkSync() (err error) {
 			landscapeMiss++
 		}
 	}
+	// check main repos/repo URLs
 	reposErrs := make(map[string]struct{})
 	for project, repoL := range reposL {
 		ignored, ignore := ignoreRepo[project]
@@ -561,6 +664,7 @@ func checkSync() (err error) {
 		msgPrintf("error: repos mismatches detected: %d\n", len(reposErrs))
 		report = true
 	}
+	// check join/accepted dates
 	joinDatesErrs := make(map[string]struct{})
 	for project, joinDateL := range joinDatesL {
 		_, ignore := ignoreJoinDate[project]
@@ -604,6 +708,7 @@ func checkSync() (err error) {
 	if len(joinDatesErrs) > 0 {
 		msgPrintf("error: %d join dates mismatches detected\n", len(joinDatesErrs))
 	}
+	// check incubating dates
 	incubatingDatesErrs := make(map[string]struct{})
 	for project, incubatingDateL := range incubatingDatesL {
 		_, ignore := ignoreIncubatingDate[project]
@@ -648,6 +753,7 @@ func checkSync() (err error) {
 		msgPrintf("error: incubating dates mismatches detected: %d\n", len(incubatingDatesErrs))
 		report = true
 	}
+	// check graduated dates
 	graduatedDatesErrs := make(map[string]struct{})
 	for project, graduatedDateL := range graduatedDatesL {
 		_, ignore := ignoreGraduatedDate[project]
@@ -691,6 +797,7 @@ func checkSync() (err error) {
 	if len(graduatedDatesErrs) > 0 {
 		msgPrintf("error: graduated dates mismatches detected: %d\n", len(graduatedDatesErrs))
 	}
+	// check maturity levels/statuses
 	statusCountsL := make(map[string]int)
 	statusCountsP := make(map[string]int)
 	statusErrs := make(map[string]struct{})
