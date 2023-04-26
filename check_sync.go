@@ -186,6 +186,7 @@ func checkSync() (err error) {
 		"capsule": {},
 		"metallb": {},
 	}
+	// Read landscape.yml
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
 	if landscapePath == "" {
 		landscapePath = "https://raw.githubusercontent.com/cncf/landscape/master/landscape.yml"
@@ -214,6 +215,7 @@ func checkSync() (err error) {
 			return
 		}
 	}
+	// Read devstats projects.yaml
 	projectsPath := os.Getenv("PROJECTS_YAML_PATH")
 	if projectsPath == "" {
 		projectsPath = "https://raw.githubusercontent.com/cncf/devstats/master/projects.yaml"
@@ -242,6 +244,36 @@ func checkSync() (err error) {
 			return
 		}
 	}
+	// Read devstats-docker-images projects.yaml
+	projects2Path := os.Getenv("DOCKER_PROJECTS_YAML_PATH")
+	if projects2Path == "" {
+		projects2Path = "https://raw.githubusercontent.com/cncf/devstats-docker-images/master/devstats-helm/projects.yaml"
+	}
+	var dataP2 []byte
+	if strings.Contains(projects2Path, "https://") || strings.Contains(projects2Path, "http://") {
+		var response *http.Response
+		response, err = http.Get(projects2Path)
+		if err != nil {
+			msgPrintf("http.Get '%s' -> %+v", projects2Path, err)
+			report = true
+			return
+		}
+		defer func() { _ = response.Body.Close() }()
+		dataP2, err = ioutil.ReadAll(response.Body)
+		if err != nil {
+			msgPrintf("ioutil.ReadAll '%s' -> %+v", projects2Path, err)
+			report = true
+			return
+		}
+	} else {
+		dataP2, err = ioutil.ReadFile(projects2Path)
+		if err != nil {
+			msgPrintf("ioutil.ReadFile: unable to read file '%s': %v", projects2Path, err)
+			report = true
+			return
+		}
+	}
+	// All yamls read
 	var landscape types.LandscapeList
 	err = yaml.Unmarshal(dataL, &landscape)
 	if err != nil {
@@ -253,6 +285,13 @@ func checkSync() (err error) {
 	err = yaml.Unmarshal(dataP, &projects)
 	if err != nil {
 		msgPrintf("yaml.Unmarshal '%s' -> %+v", projectsPath, err)
+		report = true
+		return
+	}
+	var projects2 devstatscode.AllProjects
+	err = yaml.Unmarshal(dataP2, &projects2)
+	if err != nil {
+		msgPrintf("yaml.Unmarshal '%s' -> %+v", projects2Path, err)
 		report = true
 		return
 	}
@@ -270,6 +309,7 @@ func checkSync() (err error) {
 	graduatedDatesL := make(map[string]string)
 	projectsByStateP := make(map[string]map[string]struct{})
 	projectsByStateL := make(map[string]map[string]struct{})
+	// Iterate devstats projects.yaml
 	for name, data := range projects.Projects {
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
@@ -306,6 +346,77 @@ func checkSync() (err error) {
 		}
 		projectsByStateP[status][fullName] = struct{}{}
 	}
+	// Iterate devstats-docker-images projects.yaml
+	diffFromDocker := 0
+	for name, data := range projects2.Projects {
+		name = strings.ToLower(name)
+		_, skip := skipList[name]
+		if skip {
+			continue
+		}
+		if data.Disabled {
+			continue
+		}
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		if status == "-" {
+			continue
+		}
+		fullName := strings.ToLower(data.FullName)
+		mapped, ok := devstats2landscape[fullName]
+		if ok {
+			fullName = mapped
+		}
+		fullName = strings.ToLower(fullName)
+		_, ok = projectsNames[fullName]
+		if !ok {
+			msgPrintf("error: missing docker project in devstats projects: '%s'\n", fullName)
+			report = true
+			diffFromDocker++
+		}
+		_, ok = projectsByStateP[status][fullName]
+		if !ok {
+			msgPrintf("error: missing or different status of docker project in devstats projects: %s '%s'\n", status, fullName)
+			report = true
+			diffFromDocker++
+		}
+		repoD := strings.TrimSpace(strings.ToLower(data.MainRepo))
+		repoP, ok := reposP[fullName]
+		if !ok || repoP != repoD {
+			msgPrintf("error: missing or different docker main repo in devstats projects: %s '%s' <=> '%s'\n", fullName, repoD, repoP)
+			report = true
+			diffFromDocker++
+		}
+		joinDateD := data.JoinDate.Format("2006-01-02")
+		joinDateP, ok := joinDatesP[fullName]
+		if !ok || joinDateP != joinDateD {
+			msgPrintf("error: missing or different docker join date in devstats projects: %s '%s' <=> '%s'\n", fullName, joinDateD, joinDateP)
+			report = true
+			diffFromDocker++
+		}
+		if data.IncubatingDate != nil {
+			incubatingDateD := data.IncubatingDate.Format("2006-01-02")
+			incubatingDateP, ok := incubatingDatesP[fullName]
+			if !ok || incubatingDateP != incubatingDateD {
+				msgPrintf("error: missing or different docker incubating date in devstats projects: %s '%s' <=> '%s'\n", fullName, incubatingDateD, incubatingDateP)
+				report = true
+				diffFromDocker++
+			}
+		}
+		if data.GraduatedDate != nil {
+			graduatedDateD := data.GraduatedDate.Format("2006-01-02")
+			graduatedDateP, ok := graduatedDatesP[fullName]
+			if !ok || graduatedDateP != graduatedDateD {
+				msgPrintf("error: missing or different docker graduated date in devstats projects: %s '%s' <=> '%s'\n", fullName, graduatedDateD, graduatedDateP)
+				report = true
+				diffFromDocker++
+			}
+		}
+	}
+	if diffFromDocker > 0 {
+		msgPrintf("error: devstats-docker-images projects.yaml differences vs devstats projects.yaml: %d\n", diffFromDocker)
+		report = true
+	}
+	// Iterate landscape.yml
 	devstatsMiss := 0
 	for _, data := range landscape.Landscape {
 		for _, scat := range data.Subcategories {
