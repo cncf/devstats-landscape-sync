@@ -151,7 +151,6 @@ func checkSync() (err error) {
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
 	// Format is 2 strings: expected landscape repo, expected devstats repo
 	ignoreRepo := map[string][2]string{
-		"capsule":                 {"clastix/capsule", "capsule-rs/capsule"},
 		"sealer":                  {"alibaba/sealer", "sealerio/sealer"},
 		"network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
 		"confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
@@ -691,7 +690,7 @@ func checkSync() (err error) {
 		}
 		joinDateL, ok := joinDatesL[project]
 		if !ok {
-			msgPrintf("error: devstats join adte missig in landscape '%s' '%s'\n", project, joinDateP)
+			msgPrintf("error: devstats join date missig in landscape '%s' '%s'\n", project, joinDateP)
 			report = true
 			joinDatesErrs[project] = struct{}{}
 			continue
