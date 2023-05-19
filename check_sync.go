@@ -808,7 +808,7 @@ func checkSync() (err error) {
 			}
 			_, ok := projectsByStateP[status][project]
 			if !ok {
-				msgPrintf("error: landscape is missing %s '%s'", status, project)
+				msgPrintf("error: devstats is missing %s '%s'", status, project)
 				report = true
 				for otherStatus := range projectsByStateP {
 					_, ok := projectsByStateP[otherStatus][project]
@@ -839,7 +839,7 @@ func checkSync() (err error) {
 			if !ok {
 				_, reported := statusErrs[project]
 				if !reported {
-					msgPrintf("error: devstats is missing %s '%s'", status, project)
+					msgPrintf("error: landscape is missing %s '%s'", status, project)
 					report = true
 					for otherStatus := range projectsByStateL {
 						_, ok := projectsByStateL[otherStatus][project]
