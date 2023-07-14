@@ -122,11 +122,11 @@ func checkSync() (err error) {
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
 	// Others are missing in landscape.yml, while they are present in DevStats
 	skipList := map[string]struct{}{
-		"gitopswg":        {},
-		"all":             {},
-		"vscodek8stools":  {},
-		"kubevip":         {},
-		"inspektorgadget": {},
+		"gitopswg":       {},
+		"all":            {},
+		"vscodek8stools": {},
+		"kubevip":        {},
+		// "inspektorgadget": {},
 	}
 	// Some projects in Landscape are listed twice
 	// Fort example Cilum was renamed to Tetragon and is listed twice
@@ -540,6 +540,7 @@ func checkSync() (err error) {
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
 						msgPrintf("error: missing in devstats projects: '%s'\n", name)
+						// msgPrintf("details: item: %+v, status: %+v, projectNames: %+v\n", item, status, projectsNames)
 						report = true
 						devstatsMiss++
 					}
