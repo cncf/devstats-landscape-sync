@@ -122,10 +122,10 @@ func checkSync() (err error) {
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
 	// Others are missing in landscape.yml, while they are present in DevStats
 	skipList := map[string]struct{}{
-		"gitopswg":       {},
-		"all":            {},
-		"vscodek8stools": {},
-		"kubevip":        {},
+		"gitopswg": {},
+		"all":      {},
+		// "vscodek8stools": {},
+		// "kubevip":        {},
 		// "inspektorgadget": {},
 	}
 	// Some projects in Landscape are listed twice
@@ -151,16 +151,16 @@ func checkSync() (err error) {
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
 	// Format is 2 strings: expected landscape repo, expected devstats repo
 	ignoreRepo := map[string][2]string{
-		"sealer":                  {"alibaba/sealer", "sealerio/sealer"},
-		"network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
-		"confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
-		"piraeus datastore":       {"piraeusdatastore/piraeus", "piraeusdatastore/piraeus-operator"},
-		"devspace":                {"devspace-sh/devspace", "devspace-cloud/devspace-cloud"},
-		"notary":                  {"notaryproject/notary", "notaryproject/notation"},
-		"knative":                 {"knative/community", "knative/serving"},
-		"open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
-		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
-		"openfeature":             {"open-feature/community", "open-feature/spec"},
+		// "sealer":                  {"alibaba/sealer", "sealerio/sealer"},
+		// "network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
+		// "confidential containers": {"confidential-containers/documentation", "confidential-containers/operator"},
+		// "piraeus datastore":       {"piraeusdatastore/piraeus", "piraeusdatastore/piraeus-operator"},
+		// "devspace":                {"devspace-sh/devspace", "devspace-cloud/devspace-cloud"},
+		// "notary":                  {"notaryproject/notary", "notaryproject/notation"},
+		// "knative":                 {"knative/community", "knative/serving"},
+		// "open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
+		// "opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
+		// "openfeature":             {"open-feature/community", "open-feature/spec"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -168,10 +168,10 @@ func checkSync() (err error) {
 	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
 	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17' (but technically the same)
 	ignoreJoinDate := map[string]struct{}{
-		"kubedl":       {},
-		"capsule":      {},
-		"curve":        {},
-		"clusterpedia": {},
+		// "kubedl":       {},
+		// "capsule":      {},
+		// "curve":        {},
+		// "clusterpedia": {},
 	}
 	// Some incubating dates present in landscape and not present in DevStats can be ignored: this is for projects which joined with level >= incubating
 	// Such projects have no incubation dates in DevStats because they were at least such at join time
@@ -182,8 +182,8 @@ func checkSync() (err error) {
 	// To ignore specific projects tstatuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
 	ignoreStatus := map[string]struct{}{
-		"capsule": {},
-		"metallb": {},
+		// "capsule": {},
+		// "metallb": {},
 	}
 	// Read landscape.yml
 	landscapePath := os.Getenv("LANDSCAPE_YAML_PATH")
@@ -691,7 +691,7 @@ func checkSync() (err error) {
 		}
 		joinDateL, ok := joinDatesL[project]
 		if !ok {
-			msgPrintf("error: devstats join date missig in landscape '%s' '%s'\n", project, joinDateP)
+			msgPrintf("error: devstats join date missing in landscape '%s' '%s'\n", project, joinDateP)
 			report = true
 			joinDatesErrs[project] = struct{}{}
 			continue
