@@ -105,6 +105,7 @@ func checkSync() (err error) {
 		fmt.Printf("time: %v\n", dtEnd.Sub(dtStart))
 	}()
 	// Some names are different in DevStats than in landscape.yml (not so many for 170+ projects)
+	// 1st is DevStats one, 2nd is landscape one:
 	devstats2landscape := map[string]string{
 		"foniod":                              "fonio",
 		"litmuschaos":                         "litmus",
@@ -117,6 +118,7 @@ func checkSync() (err error) {
 		"external secrets operator":           "external-secrets",
 		"smi":                                 "service mesh interface (smi)",
 		"hexa policy orchestrator":            "hexa",
+		"vs code kubernetes tools":            "visual studio code kubernetes tools",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
