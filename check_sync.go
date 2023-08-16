@@ -135,10 +135,12 @@ func checkSync() (err error) {
 	// Those entries should not be reported as missing in DevStats
 	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
 	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DevStats page for it)
+	// "wasmedge (wasm)" is ignored because it is also listed in landscape.yml as "wasmedge runtime" which matches devstats (so it is listed twice which is incorrect"
 	ignoreMissing := map[string]struct{}{
-		"tetragon":     {},
-		"traefik mesh": {},
-		"opengitops":   {},
+		"tetragon":        {},
+		"traefik mesh":    {},
+		"opengitops":      {},
+		"wasmedge (wasm)": {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -542,7 +544,7 @@ func checkSync() (err error) {
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
 						msgPrintf("error: missing in devstats projects: '%s'\n", name)
-						// msgPrintf("details: item: %+v, status: %+v, projectNames: %+v\n", item, status, projectsNames)
+						// msgPrintf("details: item: %+v, status: %+v, projectNames: %+v, namesMapping: %+v\n", item, status, projectsNames, namesMapping)
 						report = true
 						devstatsMiss++
 					}
