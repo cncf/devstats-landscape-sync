@@ -136,11 +136,13 @@ func checkSync() (err error) {
 	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
 	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DevStats page for it)
 	// "wasmedge (wasm)" is ignored because it is also listed in landscape.yml as "wasmedge runtime" which matches devstats (so it is listed twice which is incorrect"
+	// "openfunction (wasm)" is ignored because it is also listed as "openfunction"
 	ignoreMissing := map[string]struct{}{
-		"tetragon":        {},
-		"traefik mesh":    {},
-		"opengitops":      {},
-		"wasmedge (wasm)": {},
+		"tetragon":            {},
+		"traefik mesh":        {},
+		"opengitops":          {},
+		"wasmedge (wasm)":     {},
+		"openfunction (wasm)": {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
