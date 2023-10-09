@@ -137,7 +137,9 @@ func checkSync() (err error) {
 	// "opengitops" is marked as Sandbox project in landscape but there is no more info and I belive no such project was added (there is no DevStats page for it)
 	// "wasmedge (wasm)" is ignored because it is also listed in landscape.yml as "wasmedge runtime" which matches devstats (so it is listed twice which is incorrect"
 	// "openfunction (wasm)" is ignored because it is also listed as "openfunction"
-	// "kubewarden (wasm)" is ignored becaus eit is duplicate of "kubewarden"
+	// "kubewarden (wasm)" is ignored because it is duplicate of "kubewarden"
+	// "keda (serverless)" is ignored because it is duplicate of "keda"
+	// "meshery (wasm)" is ignored because it is duplicate of "meshery"
 	ignoreMissing := map[string]struct{}{
 		"tetragon":            {},
 		"traefik mesh":        {},
@@ -145,6 +147,8 @@ func checkSync() (err error) {
 		"wasmedge (wasm)":     {},
 		"openfunction (wasm)": {},
 		"kubewarden (wasm)":   {},
+		"keda (serverless)":   {},
+		"meshery (wasm)":      {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
