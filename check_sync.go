@@ -140,15 +140,27 @@ func checkSync() (err error) {
 	// "kubewarden (wasm)" is ignored because it is duplicate of "kubewarden"
 	// "keda (serverless)" is ignored because it is duplicate of "keda"
 	// "meshery (wasm)" is ignored because it is duplicate of "meshery"
+	// "dapr (serverless)" is ignored because it is duplicate
+	// "knative (serverless)" is ignored because it is duplicate
+	// "openfunction (serverless)" is ignored because it is duplicate
+	// "virtual kubelet (serverless)" is ignored because it is duplicate
+	// "krustlet (wasm)" is ignored because it is duplicate
+	// "serverless devs (serverless)" is ignored because it is duplicate
 	ignoreMissing := map[string]struct{}{
-		"tetragon":            {},
-		"traefik mesh":        {},
-		"opengitops":          {},
-		"wasmedge (wasm)":     {},
-		"openfunction (wasm)": {},
-		"kubewarden (wasm)":   {},
-		"keda (serverless)":   {},
-		"meshery (wasm)":      {},
+		"tetragon":                     {},
+		"traefik mesh":                 {},
+		"opengitops":                   {},
+		"wasmedge (wasm)":              {},
+		"openfunction (wasm)":          {},
+		"kubewarden (wasm)":            {},
+		"keda (serverless)":            {},
+		"meshery (wasm)":               {},
+		"dapr (serverless)":            {},
+		"knative (serverless)":         {},
+		"openfunction (serverless)":    {},
+		"virtual kubelet (serverless)": {},
+		"krustlet (wasm)":              {},
+		"serverless devs (serverless)": {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
