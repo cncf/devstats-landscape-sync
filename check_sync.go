@@ -119,6 +119,7 @@ func checkSync() (err error) {
 		"smi":                                 "service mesh interface (smi)",
 		"hexa policy orchestrator":            "hexa",
 		"vs code kubernetes tools":            "visual studio code kubernetes tools",
+		"copacetic":                           "copa",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
