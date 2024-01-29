@@ -120,6 +120,7 @@ func checkSync() (err error) {
 		"hexa policy orchestrator":            "hexa",
 		"vs code kubernetes tools":            "visual studio code kubernetes tools",
 		"copacetic":                           "copa",
+		"logging operator":                    "logging operator (kube logging)",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -186,6 +187,7 @@ func checkSync() (err error) {
 		// "open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
 		// "opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
+		"keptn": {"keptn/lifecycle-toolkit", "keptn/keptn"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -204,7 +206,7 @@ func checkSync() (err error) {
 	// "kubevirt" had no incubation date in landscape.yml and it moved to incubation but date is unknown: this was fixed in landscape at 4/25/23.
 	ignoreIncubatingDate := map[string]struct{}{}
 	ignoreGraduatedDate := map[string]struct{}{}
-	// To ignore specific projects tstatuses after confirmed they are OK
+	// To ignore specific projects statuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
 	ignoreStatus := map[string]struct{}{
 		// "capsule": {},
