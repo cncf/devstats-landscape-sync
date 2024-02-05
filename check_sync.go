@@ -121,6 +121,7 @@ func checkSync() (err error) {
 		"vs code kubernetes tools":            "visual studio code kubernetes tools",
 		"copacetic":                           "copa",
 		"logging operator":                    "logging operator (kube logging)",
+		"krknchaos":                           "krkn",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -187,7 +188,8 @@ func checkSync() (err error) {
 		// "open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
 		// "opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
-		"keptn": {"keptn/lifecycle-toolkit", "keptn/keptn"},
+		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
+		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
