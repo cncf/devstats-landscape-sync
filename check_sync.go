@@ -127,11 +127,11 @@ func checkSync() (err error) {
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
 	// Others are missing in landscape.yml, while they are present in DevStats
 	skipList := map[string]struct{}{
-		"gitopswg": {},
-		"all":      {},
+		"all": {},
 		// "vscodek8stools": {},
 		// "kubevip":        {},
 		// "inspektorgadget": {},
+		// "gitopswg": {},
 	}
 	// Some projects in Landscape are listed twice
 	// Fort example Cilum was renamed to Tetragon and is listed twice
@@ -150,9 +150,9 @@ func checkSync() (err error) {
 	// "krustlet (wasm)" is ignored because it is duplicate
 	// "serverless devs (serverless)" is ignored because it is duplicate
 	ignoreMissing := map[string]struct{}{
-		"tetragon":                     {},
-		"traefik mesh":                 {},
-		"opengitops":                   {},
+		"tetragon":     {},
+		"traefik mesh": {},
+		// "opengitops":                   {},
 		"wasmedge (wasm)":              {},
 		"openfunction (wasm)":          {},
 		"kubewarden (wasm)":            {},
@@ -190,6 +190,7 @@ func checkSync() (err error) {
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
+		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
