@@ -5,6 +5,7 @@
 # Running
 
 - `` clear && make && [LANDSCAPE_YAML_PATH=url|path] [PROJECTS_YAML_PATH=url|path] [DOCKER_PROJECTS_YAML_PATH=url|path] [EMAIL_TO=alerting-address@domain.com,alerting2@other.pl] [SKIP_EMAIL=1] ./check_sync ``.
+- `` [DBG=1] ./check_sync.sh ``.
 
 
 # Deploying

@@ -87,6 +87,12 @@ func checkSync() (err error) {
 	}
 	msgs := []string{}
 	report := false
+	dbg := os.Getenv("DBG") != ""
+	msgDebug := func(format string, args ...interface{}) {
+		if dbg {
+			fmt.Printf(format, args...)
+		}
+	}
 	msgPrintf := func(format string, args ...interface{}) {
 		str := fmt.Sprintf(format, args...)
 		msgs = append(msgs, str)
@@ -186,11 +192,11 @@ func checkSync() (err error) {
 		// "notary":                  {"notaryproject/notary", "notaryproject/notation"},
 		// "knative":                 {"knative/community", "knative/serving"},
 		// "open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
-		// "opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
+		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -570,7 +576,7 @@ func checkSync() (err error) {
 					_, ignored := ignoreMissing[name]
 					if !disabled && !ignored {
 						msgPrintf("error: missing in devstats projects: '%s'\n", name)
-						// msgPrintf("details: item: %+v, status: %+v, projectNames: %+v, namesMapping: %+v\n", item, status, projectsNames, namesMapping)
+						msgDebug("details: item: %+v, status: %+v, projectNames: %+v, namesMapping: %+v\n", item, status, projectsNames, namesMapping)
 						report = true
 						devstatsMiss++
 					}
