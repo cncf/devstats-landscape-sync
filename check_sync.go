@@ -112,6 +112,7 @@ func checkSync() (err error) {
 	}()
 	// Some names are different in DevStats than in landscape.yml (not so many for 170+ projects)
 	// 1st is DevStats one, 2nd is landscape one:
+	// exceptions:
 	devstats2landscape := map[string]string{
 		"foniod":                              "fonio",
 		"litmuschaos":                         "litmus",
@@ -133,12 +134,14 @@ func checkSync() (err error) {
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
 	// Others are missing in landscape.yml, while they are present in DevStats
+	// exceptions:
 	skipList := map[string]struct{}{
 		"all": {},
 		// "vscodek8stools": {},
 		// "kubevip":        {},
 		// "inspektorgadget": {},
 		// "gitopswg": {},
+		"koordinator": {},
 	}
 	// Some projects in Landscape are listed twice
 	// Fort example Cilum was renamed to Tetragon and is listed twice
@@ -156,6 +159,7 @@ func checkSync() (err error) {
 	// "virtual kubelet (serverless)" is ignored because it is duplicate
 	// "krustlet (wasm)" is ignored because it is duplicate
 	// "serverless devs (serverless)" is ignored because it is duplicate
+	// exceptions:
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
 		"traefik mesh": {},
@@ -171,6 +175,7 @@ func checkSync() (err error) {
 		"virtual kubelet (serverless)": {},
 		"krustlet (wasm)":              {},
 		"serverless devs (serverless)": {},
+		"rig.dev":                      {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -184,6 +189,7 @@ func checkSync() (err error) {
 	// For OpenFeature 'community' repo has more commits than 'spec', but the latter has tags/releases needed for
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
 	// Format is 2 strings: expected landscape repo, expected devstats repo
+	// exceptions:
 	ignoreRepo := map[string][2]string{
 		// "sealer":                  {"alibaba/sealer", "sealerio/sealer"},
 		// "network service mesh":    {"networkservicemesh/networkservicemesh", "networkservicemesh/api"},
@@ -204,6 +210,7 @@ func checkSync() (err error) {
 	// Capsue has no join data in landscape.yml
 	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
 	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17' (but technically the same)
+	// exceptions:
 	ignoreJoinDate := map[string]struct{}{
 		// "kubedl":       {},
 		// "capsule":      {},
@@ -214,10 +221,13 @@ func checkSync() (err error) {
 	// Such projects have no incubation dates in DevStats because they were at least such at join time
 	// The opposite is not true, we should always have incubating dates in landscape.yml
 	// "kubevirt" had no incubation date in landscape.yml and it moved to incubation but date is unknown: this was fixed in landscape at 4/25/23.
+	// exceptions:
 	ignoreIncubatingDate := map[string]struct{}{}
+	// exceptions:
 	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects statuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
+	// exceptions:
 	ignoreStatus := map[string]struct{}{
 		// "capsule": {},
 		// "metallb": {},
