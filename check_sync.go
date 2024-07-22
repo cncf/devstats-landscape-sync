@@ -205,6 +205,7 @@ func checkSync() (err error) {
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
 		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		"kuadrant":                {"kuadrant/kuadrant-operator", "kuadrant/authorino"},
+		"score":                   {"score-spec/spec", "score-spec/score-go"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
