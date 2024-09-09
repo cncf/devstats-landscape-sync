@@ -130,6 +130,7 @@ func checkSync() (err error) {
 		"logging operator":                    "logging operator (kube logging)",
 		"krknchaos":                           "krkn",
 		"connect":                             "connect rpc",
+		"trestlegrc":                          "oscal-compass",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -143,7 +144,7 @@ func checkSync() (err error) {
 		// "gitopswg": {},
 		"koordinator": {},
 	}
-	// Some projects in Landscape are listed twice
+	// Some projects in landscape are listed twice
 	// Fort example Cilum was renamed to Tetragon and is listed twice
 	// Those entries should not be reported as missing in DevStats
 	// "Traefik Mesh" kinda mapped to SMI in landscape, while there is also a separate entry for SMI matching it better
@@ -206,6 +207,7 @@ func checkSync() (err error) {
 		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		"kuadrant":                {"kuadrant/kuadrant-operator", "kuadrant/authorino"},
 		"score":                   {"score-spec/spec", "score-spec/score-go"},
+		"shipwright":              {"shipwright-io/community", "shipwright-io/build"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
