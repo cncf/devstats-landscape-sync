@@ -131,6 +131,7 @@ func checkSync() (err error) {
 		"krknchaos":                           "krkn",
 		"connect":                             "connect rpc",
 		"trestlegrc":                          "oscal-compass",
+		"flatcar":                             "flatcar container linux",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -142,7 +143,7 @@ func checkSync() (err error) {
 		// "kubevip":        {},
 		// "inspektorgadget": {},
 		// "gitopswg": {},
-		"koordinator": {},
+		// "koordinator": {},
 	}
 	// Some projects in landscape are listed twice
 	// Fort example Cilum was renamed to Tetragon and is listed twice
@@ -164,7 +165,7 @@ func checkSync() (err error) {
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
 		"traefik mesh": {},
-		// "opengitops":                   {},
+		// "opengitops":                {},
 		"wasmedge (wasm)":              {},
 		"openfunction (wasm)":          {},
 		"kubewarden (wasm)":            {},
@@ -189,7 +190,7 @@ func checkSync() (err error) {
 	// Same with OpenTelemetry 'opentelemetry-java' vs. 'community' repos (less commits and no tags/releases on community repo).
 	// For OpenFeature 'community' repo has more commits than 'spec', but the latter has tags/releases needed for
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
-	// Format is 2 strings: expected landscape repo, expected devstats repo
+	// Format is sting => 2 strings: landscape project name => expected landscape repo, expected devstats repo
 	// exceptions:
 	ignoreRepo := map[string][2]string{
 		// "sealer":                  {"alibaba/sealer", "sealerio/sealer"},
@@ -208,6 +209,7 @@ func checkSync() (err error) {
 		"kuadrant":                {"kuadrant/kuadrant-operator", "kuadrant/authorino"},
 		"score":                   {"score-spec/spec", "score-spec/score-go"},
 		"shipwright":              {"shipwright-io/community", "shipwright-io/build"},
+		"flatcar container linux": {"flatcar/flatcar", "flatcar/mantle"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
