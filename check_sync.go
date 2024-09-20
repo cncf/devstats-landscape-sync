@@ -202,13 +202,13 @@ func checkSync() (err error) {
 		// "knative":                 {"knative/community", "knative/serving"},
 		// "open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
+		// "shipwright":              {"shipwright-io/community", "shipwright-io/build"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
 		"opentelemetry":           {"open-telemetry/community", "open-telemetry/opentelemetry-java"},
 		"kuadrant":                {"kuadrant/kuadrant-operator", "kuadrant/authorino"},
 		"score":                   {"score-spec/spec", "score-spec/score-go"},
-		"shipwright":              {"shipwright-io/community", "shipwright-io/build"},
 		"flatcar container linux": {"flatcar/flatcar", "flatcar/mantle"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
