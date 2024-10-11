@@ -227,8 +227,12 @@ func checkSync() (err error) {
 	// Such projects have no incubation dates in DevStats because they were at least such at join time
 	// The opposite is not true, we should always have incubating dates in landscape.yml
 	// "kubevirt" had no incubation date in landscape.yml and it moved to incubation but date is unknown: this was fixed in landscape at 4/25/23.
+	// For "kubernetes" join date was equal incubating date as there was no such concept yet, and dates must me unique when changing state, so we moved it 1 day ahead
+	// This discrepancy between devstats and landscape is artificial and is not an error
 	// exceptions:
-	ignoreIncubatingDate := map[string]struct{}{}
+	ignoreIncubatingDate := map[string]struct{}{
+		"kubernetes": {},
+	}
 	// exceptions:
 	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects statuses after confirmed they are OK
