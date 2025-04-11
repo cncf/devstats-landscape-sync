@@ -133,6 +133,7 @@ func checkSync() (err error) {
 		"trestlegrc":                           "oscal-compass",
 		"flatcar":                              "flatcar container linux",
 		"notary":                               "notary project",
+		"tratteria":                            "tokenetes",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -180,7 +181,6 @@ func checkSync() (err error) {
 		"krustlet (wasm)":              {},
 		"serverless devs (serverless)": {},
 		"rig.dev":                      {},
-		"tokenetes":                    {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -191,7 +191,9 @@ func checkSync() (err error) {
 	// Knative landscape repo 'community' is way smaller than devstats one 'serving' and has no releases, so DevStats continues to use its own
 	// OCM (open cluster management) devstats's repo 'api' has more commits and has tags, while landscape 'ocm' has no tags/releases
 	// Same with OpenTelemetry 'opentelemetry-java' vs. 'community' repos (less commits and no tags/releases on community repo).
+	// SpinKube - landscape list only org 'spinkube' while the correct repo is in new org 'spinframework': 'spinframework/spin-operator'
 	// For OpenFeature 'community' repo has more commits than 'spec', but the latter has tags/releases needed for
+	// Curiefense has no repo set in landscape, while in devstats it has correct repo, but project was also archived so it doesn't matter
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
 	// Format is sting => 2 strings: landscape project name => expected landscape repo, expected devstats repo
 	// exceptions:
@@ -214,6 +216,8 @@ func checkSync() (err error) {
 		"score":                   {"score-spec/spec", "score-spec/score-go"},
 		"flatcar container linux": {"flatcar/flatcar", "flatcar/mantle"},
 		"open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
+		"spinkube":                {"spinkube", "spinkube/spin-operator"},
+		"curiefense":              {"", "curiefense/curiefense"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
