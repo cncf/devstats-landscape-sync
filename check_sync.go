@@ -162,6 +162,7 @@ func checkSync() (err error) {
 	// "virtual kubelet (serverless)" is ignored because it is duplicate
 	// "krustlet (wasm)" is ignored because it is duplicate
 	// "serverless devs (serverless)" is ignored because it is duplicate
+	// "tokenentes" is ignored as it is not a CNCF project but is listed in landscape as such
 	// exceptions:
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
@@ -179,6 +180,7 @@ func checkSync() (err error) {
 		"krustlet (wasm)":              {},
 		"serverless devs (serverless)": {},
 		"rig.dev":                      {},
+		"tokenetes":                    {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -615,6 +617,7 @@ func checkSync() (err error) {
 				_, present := reposL[name]
 				if !present && item.RepoURL != "" {
 					reposL[name] = strings.Replace(strings.TrimSpace(strings.ToLower(item.RepoURL)), "https://github.com/", "", -1)
+					reposL[name] = strings.Replace(strings.TrimSpace(strings.ToLower(reposL[name])), "http://github.com/", "", -1)
 				}
 				_, present = joinDatesL[name]
 				// Only first specified date will be used, no overwrite, especially with blank data
