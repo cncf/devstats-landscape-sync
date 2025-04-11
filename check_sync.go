@@ -216,8 +216,9 @@ func checkSync() (err error) {
 		"score":                   {"score-spec/spec", "score-spec/score-go"},
 		"flatcar container linux": {"flatcar/flatcar", "flatcar/mantle"},
 		"open cluster management": {"open-cluster-management-io/ocm", "open-cluster-management-io/api"},
-		"spinkube":                {"spinkube", "spinkube/spin-operator"},
+		"spinkube":                {"spinkube", "spinframework/spin-operator"},
 		"curiefense":              {"", "curiefense/curiefense"},
+		"composefs":               {"containers/composefs", "composefs/composefs"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
