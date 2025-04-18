@@ -1,6 +1,6 @@
 module github.com/cncf/devstats-landscape-sync
 
-go 1.20
+go 1.24
 
 require (
 	github.com/cncf/devstatscode v0.7.1-0.20230424083215-9ed083581c6c
@@ -9,9 +9,7 @@ require (
 )
 
 require (
-	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-github/v38 v38.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
