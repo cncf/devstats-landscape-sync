@@ -164,6 +164,7 @@ func checkSync() (err error) {
 	// "krustlet (wasm)" is ignored because it is duplicate
 	// "serverless devs (serverless)" is ignored because it is duplicate
 	// "tokenentes" is ignored as it is not a CNCF project but is listed in landscape as such
+	// "spin" is merged with spinkube in landscape
 	// exceptions:
 	ignoreMissing := map[string]struct{}{
 		"tetragon":     {},
@@ -181,6 +182,7 @@ func checkSync() (err error) {
 		"krustlet (wasm)":              {},
 		"serverless devs (serverless)": {},
 		"rig.dev":                      {},
+		"spin":                         {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -195,6 +197,7 @@ func checkSync() (err error) {
 	// For OpenFeature 'community' repo has more commits than 'spec', but the latter has tags/releases needed for
 	// Curiefense has no repo set in landscape, while in devstats it has correct repo, but project was also archived so it doesn't matter
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
+	// kubefleet: the correct repo is still azure/fleet, not the new opne kubefleet-dev/kubefleet
 	// Format is sting => 2 strings: landscape project name => expected landscape repo, expected devstats repo
 	// exceptions:
 	ignoreRepo := map[string][2]string{
@@ -219,6 +222,7 @@ func checkSync() (err error) {
 		"spinkube":                {"spinkube", "spinframework/spin-operator"},
 		"curiefense":              {"", "curiefense/curiefense"},
 		"composefs":               {"containers/composefs", "composefs/composefs"},
+		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -246,8 +250,10 @@ func checkSync() (err error) {
 	ignoreGraduatedDate := map[string]struct{}{}
 	// To ignore specific projects statuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
+	// "spin" is merged with spinkube in landscape
 	// exceptions:
 	ignoreStatus := map[string]struct{}{
+		"spin": {},
 		// "capsule": {},
 		// "metallb": {},
 	}
