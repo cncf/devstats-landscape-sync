@@ -223,6 +223,8 @@ func checkSync() (err error) {
 		"curiefense":              {"", "curiefense/curiefense"},
 		"composefs":               {"containers/composefs", "composefs/composefs"},
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
+		"tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
+		"bootc":                   {"containers/bootc", "bootc-dev/bootc"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
