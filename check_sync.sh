@@ -8,7 +8,7 @@ then
 fi
 if [ -z "$CHECK_SYNC_DIR" ]
 then
-  CHECK_SYNC_DIR="/root/go/src/github.com/cncf/devstats-landscape-sync"
+  CHECK_SYNC_DIR="${HOME}/go/src/github.com/cncf/devstats-landscape-sync"
 fi
 cd "$CHECK_SYNC_DIR" || exit 5
 git pull || exit 6
