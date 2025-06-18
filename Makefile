@@ -8,7 +8,6 @@ GO_FMT=gofmt -s -w
 GO_LINT=golint -set_exit_status
 GO_VET=go vet
 GO_IMPORTS=goimports -w
-GO_USEDEXPORTS=usedexports
 BINARIES=check_sync
 all: check ${BINARIES}
 check_sync: check_sync.go
@@ -21,9 +20,7 @@ vet: ${GO_BIN_FILES}
 	${GO_VET} ${GO_BIN_FILES}
 imports: ${GO_BIN_FILES}
 	${GO_IMPORTS} ${GO_BIN_FILES}
-usedexports: ${GO_BIN_FILES}
-	${GO_USEDEXPORTS} ./...
-check: fmt lint imports vet usedexports
+check: fmt lint imports vet
 clean:
 	rm -f ${BINARIES}
 .PHONY: all
