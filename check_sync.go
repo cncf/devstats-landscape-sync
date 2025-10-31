@@ -135,6 +135,7 @@ func checkSync() (err error) {
 		"notary":                               "notary project",
 		"tratteria":                            "tokenetes",
 		"cadence":                              "cadence workflow",
+		"oauth2-proxy":                         "oauth2 proxy",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
