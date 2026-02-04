@@ -136,6 +136,7 @@ func checkSync() (err error) {
 		"tratteria":                            "tokenetes",
 		"cadence":                              "cadence workflow",
 		"oauth2-proxy":                         "oauth2 proxy",
+		"cedar policy":                         "cedar",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -227,6 +228,7 @@ func checkSync() (err error) {
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 		"tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
 		"bootc":                   {"containers/bootc", "bootc-dev/bootc"},
+		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
