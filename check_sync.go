@@ -133,6 +133,7 @@ func checkSync() (err error) {
 		"cadence":                   "cadence workflow",
 		"oauth2-proxy":              "oauth2 proxy",
 		"cedar policy":              "cedar",
+		"kai-scheduler":             "kai scheduler",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -211,6 +212,7 @@ func checkSync() (err error) {
 		// "openfeature":             {"open-feature/community", "open-feature/spec"},
 		// "shipwright":              {"shipwright-io/community", "shipwright-io/build"},
 		// "spinkube":                {"spinkube", "spinframework/spin-operator"},
+		// "bootc":                   {"containers/bootc", "bootc-dev/bootc"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
@@ -223,7 +225,6 @@ func checkSync() (err error) {
 		"composefs":               {"containers/composefs", "composefs/composefs"},
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 		"tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
-		"bootc":                   {"containers/bootc", "bootc-dev/bootc"},
 		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
