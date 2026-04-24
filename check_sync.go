@@ -183,6 +183,7 @@ func checkSync() (err error) {
 		"serverless devs (serverless)": {},
 		"rig.dev":                      {},
 		"spin":                         {},
+		"volcano-kthena":               {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
