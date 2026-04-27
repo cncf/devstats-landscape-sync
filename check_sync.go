@@ -214,6 +214,7 @@ func checkSync() (err error) {
 		// "shipwright":              {"shipwright-io/community", "shipwright-io/build"},
 		// "spinkube":                {"spinkube", "spinframework/spin-operator"},
 		// "bootc":                   {"containers/bootc", "bootc-dev/bootc"},
+		// "tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
@@ -225,7 +226,6 @@ func checkSync() (err error) {
 		"curiefense":              {"", "curiefense/curiefense"},
 		"composefs":               {"containers/composefs", "composefs/composefs"},
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
-		"tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
 		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
