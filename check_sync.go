@@ -386,8 +386,11 @@ func checkSync() (err error) {
 	joinDatesL := make(map[string]string)
 	incubatingDatesL := make(map[string]string)
 	graduatedDatesL := make(map[string]string)
+	// devstats
 	projectsByStateP := make(map[string]map[string]struct{})
+	// devstats-docker-images
 	projectsByStateD := make(map[string]map[string]struct{})
+	// landscape
 	projectsByStateL := make(map[string]map[string]struct{})
 	// Iterate devstats projects.yaml to get data
 	for name, data := range projects.Projects {
@@ -398,6 +401,10 @@ func checkSync() (err error) {
 		}
 		if data.Disabled {
 			disabledProjects[name] = struct{}{}
+			continue
+		}
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		if status == "-" || status == "" {
 			continue
 		}
 		fullName := strings.ToLower(data.FullName)
@@ -419,7 +426,6 @@ func checkSync() (err error) {
 		if data.GraduatedDate != nil {
 			graduatedDatesP[fullName] = data.GraduatedDate.Format("2006-01-02")
 		}
-		status := strings.TrimSpace(strings.ToLower(data.Status))
 		_, ok = projectsByStateP[status]
 		if !ok {
 			projectsByStateP[status] = make(map[string]struct{})
@@ -464,6 +470,9 @@ func checkSync() (err error) {
 	}
 	// Iterate devstats-docker-images projects.yaml to check with devstats projects.yaml
 	diffFromDocker := 0
+	msgDebug("landscape: %+v\n", landscape)
+	msgDebug("projects: %+v\n", projects)
+	msgDebug("projects2: %+v\n", projects2)
 	for name, data := range projects2.Projects {
 		name = strings.ToLower(name)
 		_, skip := skipList[name]
@@ -543,16 +552,20 @@ func checkSync() (err error) {
 		if data.Disabled {
 			continue
 		}
+		status := strings.TrimSpace(strings.ToLower(data.Status))
+		if status == "-" || status == "" {
+			continue
+		}
 		fullName := strings.ToLower(data.FullName)
 		mapped, ok := devstats2landscape[fullName]
 		if ok {
 			fullName = mapped
 		}
 		fullName = strings.ToLower(fullName)
-		status := strings.TrimSpace(strings.ToLower(data.Status))
 		_, ok = projectsByStateD[status][fullName]
 		if !ok {
 			msgPrintf("error: missing or different status of devstats project in docker projects: %s '%s'\n", status, fullName)
+			msgDebug("details: devstats project: %+v, docker projects by state: %+v\n", data, projectsByStateD)
 			report = true
 			diffInDocker++
 		}
