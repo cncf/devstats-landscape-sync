@@ -233,12 +233,14 @@ func checkSync() (err error) {
 	// Capsue has no join data in landscape.yml
 	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
 	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17' (but technically the same)
+	// landscape 'curvine' has generic '2026-01-01' while DevStats has correct one.
 	// exceptions:
 	ignoreJoinDate := map[string]struct{}{
 		// "kubedl":       {},
 		// "capsule":      {},
 		// "curve":        {},
 		// "clusterpedia": {},
+		"curvine": {},
 	}
 	// Some incubating dates present in landscape and not present in DevStats can be ignored: this is for projects which joined with level >= incubating
 	// Such projects have no incubation dates in DevStats because they were at least such at join time
