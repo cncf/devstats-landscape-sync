@@ -134,6 +134,8 @@ func checkSync() (err error) {
 		"oauth2-proxy":              "oauth2 proxy",
 		"cedar policy":              "cedar",
 		"kai-scheduler":             "kai scheduler",
+		// Landscape renamed "Serverless Workflow" to "Open Workflow Specification" (GitHub org also renamed to open-workflow-specification):
+		"serverless workflow": "open workflow specification",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
@@ -165,25 +167,27 @@ func checkSync() (err error) {
 	// "serverless devs (serverless)" is ignored because it is duplicate
 	// "tokenentes" is ignored as it is not a CNCF project but is listed in landscape as such
 	// "spin" is merged with spinkube in landscape
+	// 2026-08-26: lifted exceptions for the "(wasm)"/"(serverless)" duplicates, "rig.dev" and "volcano-kthena" - landscape no longer lists them
+	// 2026-08-26: lifted "spin" - landscape has a separate proper Spin entry again (sandbox, spinframework/spin, accepted 2025-01-21) matching devstats
 	// exceptions:
 	ignoreMissing := map[string]struct{}{
-		"tetragon":     {},
-		"traefik mesh": {},
+		"tetragon":       {},
+		"traefik mesh":   {},
+		"meshery (wasm)": {},
 		// "opengitops":                {},
-		"wasmedge (wasm)":              {},
-		"openfunction (wasm)":          {},
-		"kubewarden (wasm)":            {},
-		"keda (serverless)":            {},
-		"meshery (wasm)":               {},
-		"dapr (serverless)":            {},
-		"knative (serverless)":         {},
-		"openfunction (serverless)":    {},
-		"virtual kubelet (serverless)": {},
-		"krustlet (wasm)":              {},
-		"serverless devs (serverless)": {},
-		"rig.dev":                      {},
-		"spin":                         {},
-		"volcano-kthena":               {},
+		// "wasmedge (wasm)":              {},
+		// "openfunction (wasm)":          {},
+		// "kubewarden (wasm)":            {},
+		// "keda (serverless)":            {},
+		// "dapr (serverless)":            {},
+		// "knative (serverless)":         {},
+		// "openfunction (serverless)":    {},
+		// "virtual kubelet (serverless)": {},
+		// "krustlet (wasm)":              {},
+		// "serverless devs (serverless)": {},
+		// "rig.dev":                      {},
+		// "spin":                         {},
+		// "volcano-kthena":               {},
 	}
 	// Some landscape RepoURL entries are not matching DevStats and those where DevStats is correct are ignored here
 	// For some repos we know that landscape.yml has other repo than DevStats
@@ -233,7 +237,7 @@ func checkSync() (err error) {
 	// Capsue has no join data in landscape.yml
 	// landscape 'curve' join date '2022-09-14' is not equal to devstats join date '2022-06-17'
 	// landscape 'clusterpedia' join date '2022-6-17' is not equal to devstats join date '2022-06-17' (but technically the same)
-	// landscape 'curvine' has generic '2026-01-01' while DevStats has correct one.
+	// landscape 'curvine' has generic '2026-01-06' (was '2026-01-01') while DevStats has correct one.
 	// exceptions:
 	ignoreJoinDate := map[string]struct{}{
 		// "kubedl":       {},
@@ -257,9 +261,10 @@ func checkSync() (err error) {
 	// To ignore specific projects statuses after confirmed they are OK
 	// Capsule is missing in landscape.yml while MetalLB has no maturity level specified.
 	// "spin" is merged with spinkube in landscape
+	// 2026-08-26: lifted "spin" - landscape has a separate Spin sandbox entry again, matching devstats status
 	// exceptions:
 	ignoreStatus := map[string]struct{}{
-		"spin": {},
+		// "spin":    {},
 		// "capsule": {},
 		// "metallb": {},
 	}
