@@ -134,8 +134,7 @@ func checkSync() (err error) {
 		"oauth2-proxy":              "oauth2 proxy",
 		"cedar policy":              "cedar",
 		"kai-scheduler":             "kai scheduler",
-		// Landscape renamed "Serverless Workflow" to "Open Workflow Specification" (GitHub org also renamed to open-workflow-specification):
-		"serverless workflow": "open workflow specification",
+		// "serverless workflow": "open workflow specification",
 		// "gitops wg":                           "opengitops",
 	}
 	// all (All CNCF) is a special project in DevStats containing all CNCF projects as repo groups - so it is not in landscape.yaml
