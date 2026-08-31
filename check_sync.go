@@ -142,6 +142,14 @@ func checkSync() (err error) {
 	// exceptions:
 	skipList := map[string]struct{}{
 		"all": {},
+		// 2026-08-31: GraphQL projects retired/archived - they are GraphQL Foundation (not CNCF) projects,
+		// removed from devstats master projects.yaml and kept as status: Archived (with join_date: null)
+		// in devstats-docker-images projects.yaml - they were never in CNCF landscape.yml.
+		"graphql":        {},
+		"graphqljs":      {},
+		"graphiql":       {},
+		"expressgraphql": {},
+		"graphqlspec":    {},
 		// "vscodek8stools": {},
 		// "kubevip":        {},
 		// "inspektorgadget": {},
@@ -202,6 +210,7 @@ func checkSync() (err error) {
 	// Curiefense has no repo set in landscape, while in devstats it has correct repo, but project was also archived so it doesn't matter
 	// DevStats to build annotations/ranges - so DevStats uses 'spec' repo
 	// kubefleet: the correct repo is still azure/fleet, not the new opne kubefleet-dev/kubefleet
+	// sdc: landscape lists 'sdcio/docs' (docs-only repo) while DevStats uses the main code repo 'sdcio/data-server'
 	// Format is sting => 2 strings: landscape project name => expected landscape repo, expected devstats repo
 	// exceptions:
 	ignoreRepo := map[string][2]string{
@@ -230,6 +239,7 @@ func checkSync() (err error) {
 		"composefs":               {"containers/composefs", "composefs/composefs"},
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
+		"sdc":                     {"sdcio/docs", "sdcio/data-server"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
@@ -425,7 +435,9 @@ func checkSync() (err error) {
 			namesMapping[fullName] = name
 		}
 		reposP[fullName] = strings.TrimSpace(strings.ToLower(data.MainRepo))
-		joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
+		if data.JoinDate != nil {
+			joinDatesP[fullName] = data.JoinDate.Format("2006-01-02")
+		}
 		if data.IncubatingDate != nil {
 			incubatingDatesP[fullName] = data.IncubatingDate.Format("2006-01-02")
 		}
@@ -461,7 +473,9 @@ func checkSync() (err error) {
 		fullName = strings.ToLower(fullName)
 		projectsNames[fullName] = struct{}{}
 		reposD[fullName] = strings.TrimSpace(strings.ToLower(data.MainRepo))
-		joinDatesD[fullName] = data.JoinDate.Format("2006-01-02")
+		if data.JoinDate != nil {
+			joinDatesD[fullName] = data.JoinDate.Format("2006-01-02")
+		}
 		if data.IncubatingDate != nil {
 			incubatingDatesD[fullName] = data.IncubatingDate.Format("2006-01-02")
 		}
@@ -517,12 +531,14 @@ func checkSync() (err error) {
 			report = true
 			diffFromDocker++
 		}
-		joinDateD := data.JoinDate.Format("2006-01-02")
-		joinDateP, ok := joinDatesP[fullName]
-		if !ok || joinDateP != joinDateD {
-			msgPrintf("error: missing or different docker join date in devstats projects: %s '%s' <=> '%s'\n", fullName, joinDateD, joinDateP)
-			report = true
-			diffFromDocker++
+		if data.JoinDate != nil {
+			joinDateD := data.JoinDate.Format("2006-01-02")
+			joinDateP, ok := joinDatesP[fullName]
+			if !ok || joinDateP != joinDateD {
+				msgPrintf("error: missing or different docker join date in devstats projects: %s '%s' <=> '%s'\n", fullName, joinDateD, joinDateP)
+				report = true
+				diffFromDocker++
+			}
 		}
 		if data.IncubatingDate != nil {
 			incubatingDateD := data.IncubatingDate.Format("2006-01-02")
@@ -582,12 +598,14 @@ func checkSync() (err error) {
 			report = true
 			diffInDocker++
 		}
-		joinDateP := data.JoinDate.Format("2006-01-02")
-		joinDateD, ok := joinDatesD[fullName]
-		if !ok || joinDateD != joinDateP {
-			msgPrintf("error: missing or different devstats join date in docker projects: %s '%s' <=> '%s'\n", fullName, joinDateP, joinDateD)
-			report = true
-			diffInDocker++
+		if data.JoinDate != nil {
+			joinDateP := data.JoinDate.Format("2006-01-02")
+			joinDateD, ok := joinDatesD[fullName]
+			if !ok || joinDateD != joinDateP {
+				msgPrintf("error: missing or different devstats join date in docker projects: %s '%s' <=> '%s'\n", fullName, joinDateP, joinDateD)
+				report = true
+				diffInDocker++
+			}
 		}
 		if data.IncubatingDate != nil {
 			incubatingDateP := data.IncubatingDate.Format("2006-01-02")
