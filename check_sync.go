@@ -240,6 +240,9 @@ func checkSync() (err error) {
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
 		"sdc":                     {"sdcio/docs", "sdcio/data-server"},
+		"kubewarden":              {"kubewarden/kubewarden-controller", "kubewarden/adm-controller"},
+		"ratify":                  {"ratify-project/ratify", "notaryproject/ratify"},
+		"openmetrics":             {"openobservability/openmetrics", "prometheus/openmetrics"},
 	}
 	// Some projects have wrong join date in landscape.yml, ignore this
 	// KubeDL joined at the same day as few projects before and landscape.yml is 1 year off
