@@ -178,9 +178,10 @@ func checkSync() (err error) {
 	// 2026-08-26: lifted "spin" - landscape has a separate proper Spin entry again (sandbox, spinframework/spin, accepted 2025-01-21) matching devstats
 	// exceptions:
 	ignoreMissing := map[string]struct{}{
-		"tetragon":       {},
-		"traefik mesh":   {},
-		"meshery (wasm)": {},
+		"tetragon":        {},
+		"traefik mesh":    {},
+		"meshery (wasm)":  {},
+		"agent substrate": {}, // Suppress only the missing-project warning; Agones remains a separate project.
 		// "opengitops":                {},
 		// "wasmedge (wasm)":              {},
 		// "openfunction (wasm)":          {},
