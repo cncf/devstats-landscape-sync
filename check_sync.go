@@ -228,6 +228,7 @@ func checkSync() (err error) {
 		// "spinkube":                {"spinkube", "spinframework/spin-operator"},
 		// "bootc":                   {"containers/bootc", "bootc-dev/bootc"},
 		// "tinkerbell":              {"tinkerbell/tinkerbell", "tinkerbell/tink"},
+		// "kubewarden":              {"kubewarden/kubewarden-controller", "kubewarden/adm-controller"},
 		"keptn":                   {"keptn/lifecycle-toolkit", "keptn/keptn"},
 		"confidential containers": {"confidential-containers/confidential-containers", "confidential-containers/operator"},
 		"opengitops":              {"open-gitops/project", "cncf/tag-app-delivery"},
@@ -241,7 +242,6 @@ func checkSync() (err error) {
 		"kubefleet":               {"kubefleet-dev/kubefleet", "azure/fleet"},
 		"cohdi":                   {"cohdi", "cohdi/composable-dra-driver"},
 		"sdc":                     {"sdcio/docs", "sdcio/data-server"},
-		"kubewarden":              {"kubewarden/kubewarden-controller", "kubewarden/adm-controller"},
 		"ratify":                  {"ratify-project/ratify", "notaryproject/ratify"},
 		"openmetrics":             {"openobservability/openmetrics", "prometheus/openmetrics"},
 	}
